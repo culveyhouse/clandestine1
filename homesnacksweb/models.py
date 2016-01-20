@@ -6,7 +6,7 @@ from django.contrib.auth.models import User
 
 # Create your models here.
 
-class MLS(models.Model)
+class MLS(models.Model):
     """The MLS model defines each MLS that we have added to our data cycle to extract listings"""
     user = models.ForeignKey(User, null=True, blank=True)
     mls_id = models.CharField(max_length=128, null=True, blank=True, 
@@ -17,7 +17,10 @@ class MLS(models.Model)
     date_added = models.DateTimeField(auto_now_add=True)
     date_updated = models.DateTimeField(auto_now=True)
 
-class PropertyCurrent(models.Model)
+    class Meta:
+        verbose_name_plural = "MLSs"    
+
+class PropertyCurrent(models.Model):
     """PropertyCurrent is the model/table that holds all normalized property data 
     that was most recently used to generate the full set of static HTML listing pages"""
     user = models.ForeignKey(User, null=True, blank=True)
@@ -32,7 +35,9 @@ class PropertyCurrent(models.Model)
     zip_code = models.CharField(max_length=5, 
         help_text='The required 5 digit zip code of the U.S. address for this property')
     zip_ext = models.CharField(max_length=4, null=True, blank=True, 
-        help_text='The optional 4 digit ZIP+4 extension for this property)
+        help_text='The optional 4 digit ZIP+4 extension for this property')
+    date_added = models.DateTimeField(auto_now_add=True)
+    date_updated = models.DateTimeField(auto_now=True)
     
     class Meta:
         verbose_name_plural = "PropertiesCurrent"
