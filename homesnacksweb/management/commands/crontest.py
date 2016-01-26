@@ -3,7 +3,7 @@ from homesnacksweb.models import MLS, PropertyCurrent
 
 
 class Command(BaseCommand):
-    help = 'Closes the specified poll for voting'
+    help = 'Just a first test for db and Django core connectivity'
 
     def add_arguments(self, parser):
         parser.add_argument('mls_input_id', nargs='+', type=int)

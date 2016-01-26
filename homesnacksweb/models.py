@@ -20,6 +20,20 @@ class MLS(models.Model):
     class Meta:
         verbose_name_plural = "MLSs"    
 
+class City(models.Model):
+    """City table is a growing list of cities that appeared at least once
+    in any of the data feeds. It is incomplete, but rather it reflects the
+    cities that we cover or have covered"""
+    user = models.ForeignKey(User, null=True, blank=True)    
+    name = models.CharField(max_length=100)
+    state = models.CharField(max_length=2)
+    rets_city_id = models.PositiveIntegerField(null=True, blank=True)
+    date_added = models.DateTimeField(auto_now_add=True)
+    date_updated = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        verbose_name_plural = "Cities"    
+        
 class PropertyCurrent(models.Model):
     """PropertyCurrent is the model/table that holds all normalized property data 
     that was most recently used to generate the full set of static HTML listing pages"""
@@ -43,6 +57,7 @@ class PropertyCurrent(models.Model):
     address_line_3 = models.CharField(max_length=255, null=True, blank=True)
     city = models.CharField(max_length=100)
     state = models.CharField(max_length=2)
+    homesnacks_city_id = models.ForeignKey
     zip_code = models.CharField(max_length=5, 
         help_text='The required 5 digit zip code of the U.S. address for this property')
     zip_ext = models.CharField(max_length=4, null=True, blank=True, 
@@ -91,6 +106,7 @@ class DataCycle(models.Model):
         (STATUS_COMPLETE_W_ERROR, 'Finished with errors'),
         (STATUS_ABEND, 'Abended/Aborted')
     )
+    user = models.ForeignKey(User, null=True, blank=True)    
     """step1 includes any preparations needed before the MLS feed step begins"""
     step1_prep_status = models.PositiveSmallIntegerField(choices=JOB_STATUS, default=STATUS_NOT_STARTED)
     """step2 is the main feed downloader which loops through each MLS data pipe"""
@@ -132,6 +148,7 @@ class DataCycleStep(models.Model):
         (STATUS_COMPLETE_W_ERROR, 'Finished with errors'),
         (STATUS_ABEND, 'Abended/Aborted')
     )    
+    user = models.ForeignKey(User, null=True, blank=True)    
     data_cycle = models.ForeignKey(DataCycle)
     step_id = models.PositiveSmallIntegerField(choices=CYCLE_STEPS, 
         validators=[MinValueValidator(1),
@@ -139,6 +156,6 @@ class DataCycleStep(models.Model):
     step_status = models.PositiveSmallIntegerField(choices=JOB_STATUS, default=STATUS_NOT_STARTED)
     step_start = models.DateTimeField(null=True, blank=True)
     step_finish = models.DateTimeField(null=True, blank=True)    
+    notes = models.TextField(null=True, blank=True, help_text='Optional data cycle notes about this step.')
     date_added = models.DateTimeField(auto_now_add=True)
     date_updated = models.DateTimeField(auto_now=True)    
-    
