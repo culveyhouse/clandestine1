@@ -20,6 +20,9 @@ class MLS(models.Model):
     class Meta:
         verbose_name_plural = "MLSs"    
 
+    def __str__(self):
+        return '%s: %s (Rets: %s)' % (self.id, self.mls_name, self.mls_id)  
+        
 class City(models.Model):
     """City table is a growing list of cities that appeared at least once
     in any of the data feeds. It is incomplete, but rather it reflects the
@@ -33,6 +36,9 @@ class City(models.Model):
     
     class Meta:
         verbose_name_plural = "Cities"    
+
+    def __str__(self):
+        return '%s: %s, %s  (Rets: %s)' % (self.id, self.name, self.state, self.rets_city_id)        
         
 class PropertyCurrent(models.Model):
     """PropertyCurrent is the model/table that holds all normalized property data 
@@ -93,6 +99,7 @@ class PropertyCurrent(models.Model):
         help_text='For sale / sold status of the property',
         validators=[MinValueValidator(1),
                     MaxValueValidator(4)])
+    data_cycle = models.ForeignKey('DataCycle', null=True, blank=True)
     date_added = models.DateTimeField(auto_now_add=True)
     date_updated = models.DateTimeField(auto_now=True)
     
