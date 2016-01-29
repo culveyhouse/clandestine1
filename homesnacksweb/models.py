@@ -4,6 +4,24 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from django.contrib.auth.models import User
 from datetime import date
 
+
+class JobStatus(object):
+    """The JobStatus class is simply a class that holds global constants for 
+    the JOB_STATUS codes that the data cycle tables use (DataCycle and DataCycleStep)"""
+    STATUS_NOT_STARTED = 1
+    STATUS_RUNNING = 2
+    STATUS_COMPLETE = 3
+    STATUS_COMPLETE_W_ERROR = 4
+    STATUS_ABEND = 5 
+    
+    JOB_STATUS = (
+        (STATUS_NOT_STARTED, 'Not Started'),
+        (STATUS_RUNNING, 'Running'),
+        (STATUS_COMPLETE, 'Finished'),
+        (STATUS_COMPLETE_W_ERROR, 'Finished with errors'),
+        (STATUS_ABEND, 'Abended/Aborted')
+    )  
+
 # Create your models here.
 
 class MLS(models.Model):
@@ -109,26 +127,16 @@ class PropertyCurrent(models.Model):
 class DataCycle(models.Model):
     """The DataCycle model maintains rows of data cycle runs, 
     and records current status of all parts of the data cycle"""
-    STATUS_NOT_STARTED = 1
-    STATUS_RUNNING = 2
-    STATUS_COMPLETE = 3
-    STATUS_COMPLETE_W_ERROR = 4
-    STATUS_ABEND = 5 
-    JOB_STATUS = (
-        (STATUS_NOT_STARTED, 'Not Started'),
-        (STATUS_RUNNING, 'Running'),
-        (STATUS_COMPLETE, 'Finished'),
-        (STATUS_COMPLETE_W_ERROR, 'Finished with errors'),
-        (STATUS_ABEND, 'Abended/Aborted')
-    )
+
+    JobStatusCodes = JobStatus()
     user = models.ForeignKey(User, null=True, blank=True)    
     """step1 includes any preparations needed before the MLS feed step begins"""
-    step1_prep_status = models.PositiveSmallIntegerField(choices=JOB_STATUS, default=STATUS_NOT_STARTED)
+    step1_prep_status = models.PositiveSmallIntegerField(choices=JobStatusCodes.JOB_STATUS, default=JobStatusCodes.STATUS_NOT_STARTED)
     """step2 is the main feed downloader which loops through each MLS data pipe"""
-    step2_download_status = models.PositiveSmallIntegerField(choices=JOB_STATUS, default=STATUS_NOT_STARTED)
-    step3_convert_status = models.PositiveSmallIntegerField(choices=JOB_STATUS, default=STATUS_NOT_STARTED)
-    step4_pagegen_status = models.PositiveSmallIntegerField(choices=JOB_STATUS, default=STATUS_NOT_STARTED)
-    step5_cleanup_status = models.PositiveSmallIntegerField(choices=JOB_STATUS, default=STATUS_NOT_STARTED)
+    step2_download_status = models.PositiveSmallIntegerField(choices=JobStatusCodes.JOB_STATUS, default=JobStatusCodes.STATUS_NOT_STARTED)
+    step3_convert_status = models.PositiveSmallIntegerField(choices=JobStatusCodes.JOB_STATUS, default=JobStatusCodes.STATUS_NOT_STARTED)
+    step4_pagegen_status = models.PositiveSmallIntegerField(choices=JobStatusCodes.JOB_STATUS, default=JobStatusCodes.STATUS_NOT_STARTED)
+    step5_cleanup_status = models.PositiveSmallIntegerField(choices=JobStatusCodes.JOB_STATUS, default=JobStatusCodes.STATUS_NOT_STARTED)
     last_step_completed = models.PositiveSmallIntegerField(default=0)    
     data_cycle_start = models.DateTimeField(null=True, blank=True)
     data_cycle_finish = models.DateTimeField(null=True, blank=True)
@@ -151,24 +159,13 @@ class DataCycleStep(models.Model):
         (STEP5_CLEANUP, 'Finish post-processing cleanup tasks')
     )
     
-    STATUS_NOT_STARTED = 1
-    STATUS_RUNNING = 2
-    STATUS_COMPLETE = 3
-    STATUS_COMPLETE_W_ERROR = 4
-    STATUS_ABEND = 5 
-    JOB_STATUS = (
-        (STATUS_NOT_STARTED, 'Not Started'),
-        (STATUS_RUNNING, 'Running'),
-        (STATUS_COMPLETE, 'Finished'),
-        (STATUS_COMPLETE_W_ERROR, 'Finished with errors'),
-        (STATUS_ABEND, 'Abended/Aborted')
-    )    
+    JobStatusCodes = JobStatus()
     user = models.ForeignKey(User, null=True, blank=True)    
     data_cycle = models.ForeignKey(DataCycle)
     step_id = models.PositiveSmallIntegerField(choices=CYCLE_STEPS, 
         validators=[MinValueValidator(1),
                     MaxValueValidator(5)])
-    step_status = models.PositiveSmallIntegerField(choices=JOB_STATUS, default=STATUS_NOT_STARTED)
+    step_status = models.PositiveSmallIntegerField(choices=JobStatusCodes.JOB_STATUS, default=JobStatusCodes.STATUS_NOT_STARTED)
     step_start = models.DateTimeField(null=True, blank=True)
     step_finish = models.DateTimeField(null=True, blank=True)    
     notes = models.TextField(null=True, blank=True, help_text='Optional data cycle notes about this step.')
