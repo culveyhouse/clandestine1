@@ -1,8 +1,10 @@
 from __future__ import unicode_literals
+import pytz
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.contrib.auth.models import User
-from datetime import date
+from datetime import date, datetime
+
 
 
 class JobStatus(object):
@@ -32,6 +34,7 @@ class MLS(models.Model):
     mls_name = models.CharField(max_length=500, help_text='Business name of the MLS')
     rets_url = models.URLField(null=True, blank=True)
     business_url = models.URLField(null=True, blank=True)
+    logo_path = models.CharField(max_length=250, null=True, blank=True, help_text='Filepath to this MLS\'s logo')
     date_added = models.DateTimeField(auto_now_add=True)
     date_updated = models.DateTimeField(auto_now=True)
 
@@ -123,6 +126,12 @@ class PropertyCurrent(models.Model):
     
     class Meta:
         verbose_name_plural = "PropertiesCurrent"
+        unique_together = [
+            ("mls", "mls_property_id"),
+        ]        
+    
+    def __str__(self):
+        return '%s: mls_pid %s, mls_id %s' % (self.id, self.mls_property_id, self.mls_id)               
         
 class DataCycle(models.Model):
     """The DataCycle model maintains rows of data cycle runs, 
@@ -142,6 +151,12 @@ class DataCycle(models.Model):
     data_cycle_finish = models.DateTimeField(null=True, blank=True)
     date_added = models.DateTimeField(auto_now_add=True)
     date_updated = models.DateTimeField(auto_now=True)
+    
+    @classmethod
+    def create(cls):
+        dc = cls(data_cycle_start=datetime.now(pytz.utc))
+        dc.save()
+        return dc
                
 class DataCycleStep(models.Model):
     """The data cycle steps model is a many-to-one table detailing each step
@@ -171,3 +186,10 @@ class DataCycleStep(models.Model):
     notes = models.TextField(null=True, blank=True, help_text='Optional data cycle notes about this step.')
     date_added = models.DateTimeField(auto_now_add=True)
     date_updated = models.DateTimeField(auto_now=True)    
+
+    @classmethod
+    def create_step(cls, step_id, data_cycle):
+        dcs_step = cls(step_id=step_id, data_cycle=data_cycle, step_start=datetime.now(pytz.utc))
+        # do something with the book
+        dcs_step.save()
+        return dcs_step
