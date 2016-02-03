@@ -8,6 +8,7 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument('mls_input_id', nargs='*', type=int)
             # Named (optional) arguments
+            
         parser.add_argument('--job_status_const_test',
             action='store_true',
             dest='job_status_const_test',
