@@ -14,18 +14,20 @@ class Command(BaseCommand):
             help='Run the full data cycle normally, with all steps')
             
         parser.add_argument('--steps',
-            action='store_true',
+            nargs='+',
+            type=int,
             dest='steps',
             default=False,
             help='Run a specific selection of steps within the data cycle')
+
             
     def handle(self, *args, **options):
-        if options['full']:
-            
+
+        if options['full'] or (DataCycleStep.STEP1_PREPARE in options['steps']):            
             self.stdout.write(self.style.SUCCESS('Starting the HomeSnacks data cycle'))   
             """ Add new data cycle to _datacycle table """
             dc = DataCycle.create()
-            
+
 
             """ Step 1 : Prepare """
             self.stdout.write(self.style.SUCCESS('Executing Step 1: Prepare'))
@@ -35,36 +37,39 @@ class Command(BaseCommand):
             self.stdout.write(self.style.SUCCESS('Data cycle step %s created for dc %s' % (dc_step.step_id, dc.id)))
             
             """ pseudo: Finish up any other preparations, then move on to step 2 """
+        
+        elif options['steps']:
+            self.stdout.write(self.style.SUCCESS('Grabbing the most recent data cycle'))   
+            dc = DataCycle.objects.latest('id')
             
+        if options['full'] or (DataCycleStep.STEP2_DOWNLOAD in options['steps']):      
             
             """ Step 2 : Download """
             self.stdout.write(self.style.SUCCESS('Executing Step 2: Download'))
             dc_step = DataCycleStep.create_step(DataCycleStep.STEP2_DOWNLOAD, dc)
             self.stdout.write(self.style.SUCCESS('Data cycle step %s created for dc %s' % (dc_step.step_id, dc.id)))
             """ Load list of all MLSs objects that will be downloaded/extracted """
-            
+  
+        if options['full'] or (DataCycleStep.STEP3_CONVERT in options['steps']):                  
             
             """ Step 3 : Convert """
             self.stdout.write(self.style.SUCCESS('Executing Step 3: Convert'))
             dc_step = DataCycleStep.create_step(DataCycleStep.STEP3_CONVERT, dc)
             self.stdout.write(self.style.SUCCESS('Data cycle step %s created for dc %s' % (dc_step.step_id, dc.id)))            
 
+        if options['full'] or (DataCycleStep.STEP4_GENERATE in options['steps']):      
 
             """ Step 4 : Generate """
             self.stdout.write(self.style.SUCCESS('Executing Step 4: Generate'))
             dc_step = DataCycleStep.create_step(DataCycleStep.STEP4_GENERATE, dc)
             self.stdout.write(self.style.SUCCESS('Data cycle step %s created for dc %s' % (dc_step.step_id, dc.id)))            
 
+        if options['full'] or (DataCycleStep.STEP5_CLEANUP in options['steps']):                  
             
             """ Step 5 : Cleanup """
             self.stdout.write(self.style.SUCCESS('Executing Step 5: Cleanup'))
             dc_step = DataCycleStep.create_step(DataCycleStep.STEP5_CLEANUP, dc)
             self.stdout.write(self.style.SUCCESS('Data cycle step %s created for dc %s' % (dc_step.step_id, dc.id)))
-            
-            
-        if options['steps']:
-            exec_step = Step1Prepare()
-            self.stdout.write(self.style.SUCCESS('exec step int is %s' % exec_step.step))
             
     
 class Step1Prepare(object):
