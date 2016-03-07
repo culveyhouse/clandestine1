@@ -52,6 +52,7 @@ class Command(BaseCommand):
             for mls in mls_list:
                 self.stdout.write('mls id is %s' % (mls.id))
             
+        
         """ Step 3 : Convert """
         
         if options['full'] or (DataCycleStep.STEP3_CONVERT in options['steps']):                  
@@ -109,7 +110,7 @@ class Step1Prepare(object):
 class Step2Download(object):
 
     def __init__(self, dc_cmd):
-        """ Just assign an integer to this step, probably 1 """
+        """ Just assign an integer to this step, probably 2 """
         self.step = DataCycleStep.STEP2_DOWNLOAD 
         """ Use the passed Command(BaseCommand) object """ 
         self.dc_cmd = dc_cmd
@@ -134,7 +135,7 @@ class Step2Download(object):
 class Step3Convert(object):
 
     def __init__(self, dc_cmd):
-        """ Just assign an integer to this step, probably 1 """
+        """ Just assign an integer to this step, probably 3 """
         self.step = DataCycleStep.STEP3_CONVERT 
         """ Use the passed Command(BaseCommand) object """ 
         self.dc_cmd = dc_cmd
@@ -156,7 +157,7 @@ class Step3Convert(object):
 class Step4Generate(object):
 
     def __init__(self, dc_cmd):
-        """ Just assign an integer to this step, probably 1 """
+        """ Just assign an integer to this step, probably 4 """
         self.step = DataCycleStep.STEP4_GENERATE 
         """ Use the passed Command(BaseCommand) object """ 
         self.dc_cmd = dc_cmd
@@ -178,7 +179,7 @@ class Step4Generate(object):
 class Step5Cleanup(object):
 
     def __init__(self, dc_cmd):
-        """ Just assign an integer to this step, probably 1 """
+        """ Just assign an integer to this step, probably 5 """
         self.step = DataCycleStep.STEP5_CLEANUP 
         """ Use the passed Command(BaseCommand) object """ 
         self.dc_cmd = dc_cmd

@@ -52,11 +52,16 @@ class City(models.Model):
     name = models.CharField(max_length=100)
     state = models.CharField(max_length=2)
     rets_city_id = models.PositiveIntegerField(null=True, blank=True)
+    property_count_current = models.PositiveIntegerField(null=True, blank=True)
     date_added = models.DateTimeField(auto_now_add=True)
     date_updated = models.DateTimeField(auto_now=True)
     
     class Meta:
         verbose_name_plural = "Cities"    
+        unique_together = [
+            ("name", "state")
+        ]        
+            
 
     def __str__(self):
         return '%s: %s, %s  (Rets: %s)' % (self.id, self.name, self.state, self.rets_city_id)        
