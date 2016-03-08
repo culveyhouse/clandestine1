@@ -1,6 +1,8 @@
 from django.core.management.base import BaseCommand, CommandError
+from django.db import connection
 from homesnacksweb.models import MLS, PropertyCurrent, City, DataCycle, DataCycleStep, JobStatus
 from datetime import datetime
+import re
 
 class Command(BaseCommand):
     help = 'This command manages the entire HomeSnacks real estate data cycle'
@@ -149,8 +151,29 @@ class Step3Convert(object):
         self.cmd.stdout.write(self.cmd.style.SUCCESS('Data cycle step %s created for data cycle %s (step_id=%s)' 
             % (dc_step.step_id, self.dc_cmd.dc.id, dc_step.id)))
         
-        """ Load list of all MLSs objects that will be downloaded/extracted """
+        """ Assume that data is in a _propertyimport table (not in the models.py) """
+        cursor = connection.cursor()
+        imported_sql =  "SELECT MLS_Number, Street_Number, Direction, Street_Name, City, State, Zip_Code, List_Price " \
+                        "FROM homesnacksweb_propertyimport WHERE length(City)>0 and length(State)>0;"
             
+        cursor.execute(imported_sql)
+        properties = cursor.fetchall()
+        for property in properties:
+            mls_id =            property[0]
+            street_number =     property[1]
+            direction =         property[2]
+            street_name =       property[3]
+            city =              property[4]
+            state =             property[5]
+            zip_code =          property[6]
+            list_price =        property[7]
+            full_address = "%s%s %s" % (street_number.title(), (' ' + direction.upper() if (direction is not None and len(direction)>0) else ''), street_name.title()) 
+            city_state_zip = "%s, %s %s" % (city.title(), state.upper(), zip_code)
+            seo_url = re.sub(r'[^A-za-z0-9- ]', r'', full_address.lower() + '-' + city_state_zip.lower() + '-' + '101' + mls_id)
+            seo_url = re.sub(r' ', r'-', seo_url)
+            seo_url = re.sub(r'-+', r'-', seo_url)
+            #self.cmd.stdout.write(self.cmd.style.SUCCESS('mls %s | addr: %s, %s  /  seo: %s' % (mls_id, full_address, city_state_zip, seo_url)))     
+            self.cmd.stdout.write(self.cmd.style.SUCCESS('%s, %s  /  seo: /real-estate/%s' % (full_address, city_state_zip, seo_url)))     
         return dc_step
 
 

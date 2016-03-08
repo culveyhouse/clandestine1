@@ -51,6 +51,7 @@ class City(models.Model):
     user = models.ForeignKey(User, null=True, blank=True)    
     name = models.CharField(max_length=100)
     state = models.CharField(max_length=2)
+    active = models.BooleanField(default=True)
     rets_city_id = models.PositiveIntegerField(null=True, blank=True)
     property_count_current = models.PositiveIntegerField(null=True, blank=True)
     date_added = models.DateTimeField(auto_now_add=True)
@@ -94,6 +95,7 @@ class PropertyCurrent(models.Model):
         help_text='The required 5 digit zip code of the U.S. address for this property')
     zip_ext = models.CharField(max_length=4, null=True, blank=True, 
         help_text='The optional 4 digit ZIP+4 extension for this property')
+    seo_url = models.CharField(max_length=512, null=True, blank=True)
     days_on_market = models.PositiveIntegerField(null=True, blank=True)
     agent_name = models.CharField(max_length=255, null=True, blank=True)
     agent_id = models.PositiveIntegerField(null=True, blank=True)
