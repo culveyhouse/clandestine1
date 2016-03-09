@@ -123,7 +123,7 @@ class PropertyCurrent(models.Model):
     geo_lat = models.DecimalField(decimal_places=12, max_digits=24, null=True, blank=True)
     geo_long = models.DecimalField(decimal_places=12, max_digits=24, null=True, blank=True)
     photo_count = models.PositiveIntegerField(default=0)
-    status = models.PositiveSmallIntegerField(choices=PROPERTY_STATUS, default=STATUS_ACTIVE,
+    status = models.PositiveSmallIntegerField(choices=PROPERTY_STATUS, default=STATUS_ACTIVE, 
         help_text='For sale / sold status of the property',
         validators=[MinValueValidator(1),
                     MaxValueValidator(4)])

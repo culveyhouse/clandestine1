@@ -1,5 +1,7 @@
 from django.core.management.base import BaseCommand, CommandError
 from django.db import connection
+from django.template import Template, Context
+from django.core.files import File
 from homesnacksweb.models import MLS, PropertyCurrent, City, DataCycle, DataCycleStep, JobStatus
 from datetime import datetime
 import re, sys
@@ -178,7 +180,6 @@ class Step3Convert(object):
                 property.save()
                 self.cmd.stdout.write(self.cmd.style.SUCCESS("Created %s-%s" % (property.mls_id, property.mls_property_id) ))
 
-            
         return dc_step
         
     def generateSEOProperties(self):
@@ -259,10 +260,38 @@ class Step4Generate(object):
         self.cmd.stdout.write(self.cmd.style.SUCCESS('Data cycle step %s created for data cycle %s (step_id=%s)' 
             % (dc_step.step_id, self.dc_cmd.dc.id, dc_step.id)))
         
-        """ Load list of all MLSs objects that will be downloaded/extracted """
-            
+        homepage_html = self.generateHomePage()
         return dc_step
 
+    def generateHomePage(self):
+
+        with open('/home/ubuntu/workspace/clandestine1/templates/HTML_generator_templates/real-estate-template.html', 'r') as f:
+            home_page_HTML = File(f).read()
+        t = Template(unicode(home_page_HTML))
+        
+        city_list = City.objects.filter(active=1).order_by('-property_count_current')[:30]
+        city_list_top = []
+        for city in city_list:
+            # SEO regex that was repeated from above, make sure to refactor this DLC ZZZ
+            seo_url = re.sub(r'[^A-za-z0-9- ]', r'', city.name.lower() + '-' + city.state.lower())
+            seo_url = re.sub(r' ', r'-', seo_url)
+            seo_url = re.sub(r'-+', r'-', seo_url)
+            """ Produce a human-readable city, state string. E.g., Danville, IL """
+            city_state = ', '.join([city.name, city.state]) 
+            city_list_top.append(
+                {"city_state": city_state,
+                 "city_state_seo":seo_url,
+                 "property_count":city.property_count_current}
+            )
+        
+        c = Context({"title": "title from code",
+                     "mystring":"string from code",
+                     "city_list_top":city_list_top})
+                     
+        with open('/home/ubuntu/workspace/clandestine1/templates/HTML_generator_templates/generated_HTML/real-estate.html', 'w+') as final_html:   
+            final_html.write(t.render(c))
+            final_html.close()
+        #print t.render(c)
 
 class Step5Cleanup(object):
 
