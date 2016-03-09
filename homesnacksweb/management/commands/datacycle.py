@@ -2,7 +2,7 @@ from django.core.management.base import BaseCommand, CommandError
 from django.db import connection
 from homesnacksweb.models import MLS, PropertyCurrent, City, DataCycle, DataCycleStep, JobStatus
 from datetime import datetime
-import re
+import re, sys
 
 class Command(BaseCommand):
     help = 'This command manages the entire HomeSnacks real estate data cycle'
@@ -151,31 +151,96 @@ class Step3Convert(object):
         self.cmd.stdout.write(self.cmd.style.SUCCESS('Data cycle step %s created for data cycle %s (step_id=%s)' 
             % (dc_step.step_id, self.dc_cmd.dc.id, dc_step.id)))
         
-        """ Assume that data is in a _propertyimport table (not in the models.py) """
-        cursor = connection.cursor()
-        imported_sql =  "SELECT MLS_Number, Street_Number, Direction, Street_Name, City, State, Zip_Code, List_Price " \
-                        "FROM homesnacksweb_propertyimport WHERE length(City)>0 and length(State)>0;"
+        self.cmd.stdout.write(self.cmd.style.SUCCESS('.1: Grabbing property object collection from _propertyimport'))        
+        properties = self.generateSEOProperties()
+        for property in properties:
+            try: 
+                #self.cmd.stdout.write(self.cmd.style.SUCCESS("Getting %s-%s" % (property.mls_id, property.mls_property_id) ))
+                p = PropertyCurrent.objects.get(
+                    mls_id=property.mls_id, 
+                    mls_property_id=property.mls_property_id
+                )
+                #self.cmd.stdout.write(self.cmd.style.SUCCESS("Found %s-%s, id is %s" % (p.mls_id, p.mls_property_id, p.id) ))
+                p.address_line_1=property.address_line_1
+                p.city=property.city
+                p.state=property.state
+                p.zip_code=property.zip_code
+                p.price=property.price
+                p.bedrooms_total=property.bedrooms_total
+                p.bathrooms_total=property.bathrooms_total
+                p.seo_url=property.seo_url   
+                p.status = PropertyCurrent.STATUS_ACTIVE
+                p.days_on_market = property.days_on_market
+                p.photo_count = property.photo_count
+                p.save()
+                self.cmd.stdout.write(self.cmd.style.SUCCESS("Found & updated %s-%s" % (p.mls_id, p.mls_property_id) ))
+            except: 
+                property.save()
+                self.cmd.stdout.write(self.cmd.style.SUCCESS("Created %s-%s" % (property.mls_id, property.mls_property_id) ))
+
             
+        return dc_step
+        
+    def generateSEOProperties(self):
+        """ Build full property list with supporting info (including SEO URLs) and either update or add to _propertycurrent. 
+        Assumes that data is in a _propertyimport table (not in the models.py) """
+        
+        cursor = connection.cursor()
+        imported_sql =  "SELECT mls_id, MLS_Number, Street_Number, Direction, Street_Name, " \
+                        "City, State, Zip_Code, List_Price, Bedrooms, Ttl_Baths, Days_On_Market, " \
+                        "Photo_Count " \
+                        "FROM homesnacksweb_propertyimport WHERE length(City)>0 and length(State)>0 "        
         cursor.execute(imported_sql)
         properties = cursor.fetchall()
+        """List that will store a collection of properties from the _propertyimport table. (Currently every row)"""
+        propertySEOs = []  
+
         for property in properties:
             mls_id =            property[0]
-            street_number =     property[1]
-            direction =         property[2]
-            street_name =       property[3]
-            city =              property[4]
-            state =             property[5]
-            zip_code =          property[6]
-            list_price =        property[7]
+            mls_property_id =   property[1]
+            street_number =     property[2]
+            direction =         property[3]
+            street_name =       property[4]
+            city =              property[5]
+            state =             property[6]
+            zip_code =          property[7]
+            list_price =        property[8]
+            bedrooms =          property[9]
+            bathrooms =         property[10]
+            days_on_market =    property[11]
+            photo_count =       property[12]
             full_address = "%s%s %s" % (street_number.title(), (' ' + direction.upper() if (direction is not None and len(direction)>0) else ''), street_name.title()) 
             city_state_zip = "%s, %s %s" % (city.title(), state.upper(), zip_code)
-            seo_url = re.sub(r'[^A-za-z0-9- ]', r'', full_address.lower() + '-' + city_state_zip.lower() + '-' + '101' + mls_id)
+            seo_url = re.sub(r'[^A-za-z0-9- ]', r'', full_address.lower() + '-' + city_state_zip.lower() + '-' + str(mls_id) + mls_property_id)
             seo_url = re.sub(r' ', r'-', seo_url)
             seo_url = re.sub(r'-+', r'-', seo_url)
-            #self.cmd.stdout.write(self.cmd.style.SUCCESS('mls %s | addr: %s, %s  /  seo: %s' % (mls_id, full_address, city_state_zip, seo_url)))     
-            self.cmd.stdout.write(self.cmd.style.SUCCESS('%s, %s  /  seo: /real-estate/%s' % (full_address, city_state_zip, seo_url)))     
-        return dc_step
+            try:
+                list_price_float = float(list_price)
+                bedrooms_float = float(bedrooms)
+                bathrooms_float = float(bathrooms)
+                days_on_market_int = int(days_on_market.strip())
+                photo_count_int = int(photo_count.strip())
+                self.cmd.stdout.write(self.cmd.style.SUCCESS('price/beds/baths/dom/photoct "%s/%s/%s/%s/%s" cleared.' % (list_price, bedrooms, bathrooms, days_on_market_int, photo_count_int)))                  
+            except ValueError, e:
+                list_price_float = bedrooms_float = bathrooms_float = float(0)
+                days_on_market_int = photo_count_int = 0
+                self.cmd.stdout.write(self.cmd.style.SUCCESS('price/beds/baths/dom/photoct "%s/%s/%s/%s/%s" sharted.' % (list_price, bedrooms, bathrooms, days_on_market_int, photo_count_int)))      
 
+            #self.cmd.stdout.write(self.cmd.style.SUCCESS('%s-%s | addr: %s, %s  /  seo: %s' % (str(mls_id), mls_property_id, full_address, city_state_zip, seo_url)))       
+            
+            propertySEOs.append(PropertyCurrent(
+                mls_id=int(mls_id), mls_property_id=mls_property_id, address_line_1=full_address, 
+                city=city.title(), state=state.upper(), zip_code=zip_code, price=list_price_float, 
+                bedrooms_total=bedrooms_float, bathrooms_total=bathrooms_float, seo_url=seo_url,
+                status=PropertyCurrent.STATUS_ACTIVE, days_on_market=days_on_market_int, photo_count=photo_count_int
+            ))
+        
+        cursor.close()
+        return propertySEOs
+        
+    def storeSEOURLs(self):
+        pass
+        
 
 class Step4Generate(object):
 
