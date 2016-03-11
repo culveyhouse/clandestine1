@@ -1,11 +1,17 @@
 <!DOCTYPE html>
 <html lang="en-US" prefix="og: http://ogp.me/ns#">
 <head>
+	{% spaceless %}{% if current_page = 1 %}
 	<title>{{city.name}}, {{city.state}} Real Estate | {{city.property_count_current}} Homes For Sale In {{city.name}}, {{city.state}} - HomeSnacks</title>
+	{% else %}
+	<title>Page {{current_page}} of {{total_pages}} of {{city.name}}, {{city.state}} Homes For Sale - HomeSnacks</title>
+	{% endif %}{% endspaceless %}
 	<meta name="description" content="Browse the {{city.property_count_current}} homes for sale in {{city.name}}, {{city.state}} on HomeSnacks. It's not like your real estate agent's website."/>
 	<meta charset="UTF-8">
-	<link rel="canonical" href="http://www.homesnacks.net/real-estate/{{seo_url}}/" />
-	{% if total_pages > 1 %}<link rel="next" href="www.homesnacks.net/real-estate/{{seo_url}}/{{next_page_no}}/" />{% endif %}
+	<link rel="canonical" href="http://www.homesnacks.net/real-estate/{{seo_url}}/{% if current_page > 1 %}{{current_page}}/{% endif %}" />
+	{% spaceless %}
+    {% if current_page > 1 %}<link rel="prev" href="www.homesnacks.net/real-estate/{{seo_url}}/{% if prev_page_no > 1 %}{{prev_page_no}}/{% endif %}" />{% endif %}{% endspaceless %}
+	{% spaceless %}{% if total_pages > 1 and current_page != total_pages %}<link rel="next" href="www.homesnacks.net/real-estate/{{seo_url}}/{{next_page_no}}/" />{% endif %}{% endspaceless %}
 	<meta name="robots" content="index, follow" />
 	<meta property="og:locale" content="en_US" />
 	<meta property="og:title" content="{{city.property_count_current}} homes for sale in {{city.name}}, {{city.state}} on HomeSnacks" />
@@ -111,7 +117,11 @@
 		<div id="primary" class="content-area ">
 			<div class="home-wrapper ">
 				<div class="real-estate-header clearfix">
+				    {% spaceless %}{% if current_page = 1 %}
 					<h1>{{city.name}}, {{city.state}} Real Estate & Homes For Sale - {{city.property_count_current}} Home{% if city.property_count_current > 1 %}s{% endif %}</h1>
+					{% else %}
+					<h1>{{city.name}}, {{city.state}} Real Estate & Homes For Sale - Page {{current_page}} of {{total_pages}}</h1>
+					{% endif %}{% endspaceless %}
 					<h3>Browse real estate in {{city.name}}, {{city.state}} on HomeSnacks. It's way more exciting than your real estate agent's website.</h3>
 				</div>
 				<div class="geo-header clearfix">

@@ -325,7 +325,7 @@ class Step4Generate(object):
         cities = City.objects.all().filter(active=1)
         for city in cities: 
             city.property_count_current = 0 if (city.property_count_current is None) else city.property_count_current 
-            total_pages = math.ceil(float(city.property_count_current) / float(15))
+            total_pages = int(math.ceil(float(city.property_count_current) / float(15)))
             if total_pages > 1:
                 self.cmd.stdout.write(self.cmd.style.SUCCESS(
                     '%s  has %s  props on %s pages' % (city.name,str(city.property_count_current),str(total_pages))))                
