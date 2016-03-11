@@ -174,6 +174,7 @@ class Step3Convert(object):
                 p.status = PropertyCurrent.STATUS_ACTIVE
                 p.days_on_market = property.days_on_market
                 p.photo_count = property.photo_count
+                p.size = property.size
                 p.save()
                 self.cmd.stdout.write(self.cmd.style.SUCCESS("Found & updated %s-%s" % (p.mls_id, p.mls_property_id) ))
             except: 
@@ -189,7 +190,7 @@ class Step3Convert(object):
         cursor = connection.cursor()
         imported_sql =  "SELECT mls_id, MLS_Number, Street_Number, Direction, Street_Name, " \
                         "City, State, Zip_Code, List_Price, Bedrooms, Ttl_Baths, Days_On_Market, " \
-                        "Photo_Count " \
+                        "Photo_Count, Total_SF_Apx " \
                         "FROM homesnacksweb_propertyimport WHERE length(City)>0 and length(State)>0 "        
         cursor.execute(imported_sql)
         properties = cursor.fetchall()
@@ -210,6 +211,7 @@ class Step3Convert(object):
             bathrooms =         property[10]
             days_on_market =    property[11]
             photo_count =       property[12]
+            size =              property[13]
             full_address = "%s%s %s" % (street_number.title(), (' ' + direction.upper() if (direction is not None and len(direction)>0) else ''), street_name.title()) 
             city_state_zip = "%s, %s %s" % (city.title(), state.upper(), zip_code)
             seo_url = re.sub(r'[^A-za-z0-9- ]', r'', full_address.lower() + '-' + city_state_zip.lower() + '-' + str(mls_id) + mls_property_id)
@@ -221,11 +223,12 @@ class Step3Convert(object):
                 bathrooms_float = float(bathrooms)
                 days_on_market_int = int(days_on_market.strip())
                 photo_count_int = int(photo_count.strip())
-                self.cmd.stdout.write(self.cmd.style.SUCCESS('price/beds/baths/dom/photoct "%s/%s/%s/%s/%s" cleared.' % (list_price, bedrooms, bathrooms, days_on_market_int, photo_count_int)))                  
+                size_int = int(size.strip())
+                self.cmd.stdout.write(self.cmd.style.SUCCESS('price/beds/baths/dom/photoct/size "%s/%s/%s/%s/%s/%s" cleared.' % (list_price, bedrooms, bathrooms, days_on_market_int, photo_count_int, size_int)))                  
             except ValueError, e:
                 list_price_float = bedrooms_float = bathrooms_float = float(0)
-                days_on_market_int = photo_count_int = 0
-                self.cmd.stdout.write(self.cmd.style.SUCCESS('price/beds/baths/dom/photoct "%s/%s/%s/%s/%s" sharted.' % (list_price, bedrooms, bathrooms, days_on_market_int, photo_count_int)))      
+                days_on_market_int = photo_count_int = size_int = 0
+                self.cmd.stdout.write(self.cmd.style.SUCCESS('price/beds/baths/dom/photoct/sharted "%s/%s/%s/%s/%s/%s" sharted.' % (list_price, bedrooms, bathrooms, days_on_market_int, photo_count_int, size_int)))      
 
             #self.cmd.stdout.write(self.cmd.style.SUCCESS('%s-%s | addr: %s, %s  /  seo: %s' % (str(mls_id), mls_property_id, full_address, city_state_zip, seo_url)))       
             
@@ -233,7 +236,8 @@ class Step3Convert(object):
                 mls_id=int(mls_id), mls_property_id=mls_property_id, address_line_1=full_address, 
                 city=city.title(), state=state.upper(), zip_code=zip_code, price=list_price_float, 
                 bedrooms_total=bedrooms_float, bathrooms_total=bathrooms_float, seo_url=seo_url,
-                status=PropertyCurrent.STATUS_ACTIVE, days_on_market=days_on_market_int, photo_count=photo_count_int
+                status=PropertyCurrent.STATUS_ACTIVE, days_on_market=days_on_market_int, photo_count=photo_count_int, 
+                size=size_int
             ))
         
         cursor.close()
@@ -322,12 +326,15 @@ class Step4Generate(object):
         for city in cities: 
             city.property_count_current = 0 if (city.property_count_current is None) else city.property_count_current 
             total_pages = math.ceil(float(city.property_count_current) / float(15))
-            print (''+ city.name +' has ' + str(city.property_count_current) + ' on ' + str(total_pages) + ' pages' )
+            if total_pages > 1:
+                self.cmd.stdout.write(self.cmd.style.SUCCESS(
+                    '%s  has %s  props on %s pages' % (city.name,str(city.property_count_current),str(total_pages))))                
             for current_page in range(1, int(total_pages)+1):
                     
                 next_page_no = current_page+1 if total_pages>1 else 0
                 prev_page_no = current_page-1 if total_pages>1 else 0            
-                next_page_no = 1    
+                show_pages = range(current_page-4, current_page+5)
+
                 with open('/home/ubuntu/workspace/clandestine1/templates/HTML_generator_templates/city-template.html', 'r') as f:
                     city_HTML = File(f).read()
                 t = Template(unicode(city_HTML))  
@@ -337,12 +344,25 @@ class Step4Generate(object):
                 seo_url = re.sub(r'-+', r'-', seo_url)            
                 
     
+                city_properties = PropertyCurrent.objects.filter(city=city.name, state=city.state).order_by('days_on_market')[(current_page-1)*15:(current_page*15)]
+                
+                for property in city_properties:
+                    property.formatted_display_list_price = '{:,.0f}'.format(property.price)  
+                    property.property_primary_photo_url = '%d/Photo%s-1.jpeg' % (property.mls_id, property.mls_property_id)
+                    property.property_city_state = ', '.join([property.city, property.state])
+                    property.formatted_total_beds = '{0:g}'.format(float(property.bedrooms_total))
+                    property.formatted_total_baths = '{0:g}'.format(float(property.bathrooms_total))
+                    property.formatted_sqft = '{:,}'.format(int(property.size))
+
                 c = Context({   "city":city, 
                                 "seo_url":seo_url,
                                 "total_pages":total_pages,
                                 "current_page":current_page,
                                 "prev_page_no":prev_page_no,
-                                "next_page_no":next_page_no
+                                "next_page_no":next_page_no,
+                                "total_pages_loop":range(1,int(total_pages)+1),
+                                "city_properties":city_properties,
+                                "show_pages":show_pages
                             })
                 cur_page_url = ('-%d' % current_page) if current_page>1 else ''
                 with open('/home/ubuntu/workspace/clandestine1/templates/HTML_generator_templates/generated_HTML/locations/' + seo_url + cur_page_url + '.html', 'w+') as final_html:   
