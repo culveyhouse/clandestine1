@@ -4,7 +4,7 @@ from django.template import Template, Context
 from django.core.files import File
 from homesnacksweb.models import MLS, PropertyCurrent, City, DataCycle, DataCycleStep, JobStatus
 from datetime import datetime
-import re, sys
+import re, sys, math
 
 class Command(BaseCommand):
     help = 'This command manages the entire HomeSnacks real estate data cycle'
@@ -261,6 +261,7 @@ class Step4Generate(object):
             % (dc_step.step_id, self.dc_cmd.dc.id, dc_step.id)))
         
         homepage_html = self.generateHomePage()
+        city_pages_html = self.generateCityPages()
         return dc_step
 
     def generateHomePage(self):
@@ -269,7 +270,7 @@ class Step4Generate(object):
             home_page_HTML = File(f).read()
         t = Template(unicode(home_page_HTML))
         
-        city_list = City.objects.filter(active=1).order_by('-property_count_current')[:30]
+        city_list = City.objects.filter(active=1).order_by('-property_count_current', 'name')[:30]
         city_list_top = []
         for city in city_list:
             # SEO regex that was repeated from above, make sure to refactor this DLC ZZZ
@@ -284,14 +285,71 @@ class Step4Generate(object):
                  "property_count":city.property_count_current}
             )
         
-        c = Context({"title": "title from code",
-                     "mystring":"string from code",
-                     "city_list_top":city_list_top})
+        city_list = City.objects.filter(active=1).order_by('name')
+        city_list_bottom = []
+        for city in city_list:
+            # SEO regex that was repeated from above, make sure to refactor this DLC ZZZ
+            seo_url = re.sub(r'[^A-za-z0-9- ]', r'', city.name.lower() + '-' + city.state.lower())
+            seo_url = re.sub(r' ', r'-', seo_url)
+            seo_url = re.sub(r'-+', r'-', seo_url)
+            """ Produce a human-readable city, state string. E.g., Danville, IL """
+            city_state = ', '.join([city.name, city.state]) 
+            city_list_bottom.append(
+                {"city_state": city_state,
+                 "city_state_seo":seo_url,
+                 "property_count":city.property_count_current}
+            )
+        
+        property_slide_total = range(1, 15)
+
+        carousel_properties = PropertyCurrent.objects.filter(price__gt = 100000).filter(photo_count__gt = 0).order_by('days_on_market')[:15]
+        for property in carousel_properties:
+            property.formatted_display_list_price = '{:,.0f}'.format(property.price)  
+            property.property_primary_photo_url = '%d/Photo%s-1.jpeg' % (property.mls_id, property.mls_property_id)
+            property.property_city_state = ', '.join([property.city, property.state])
+        c = Context({   "city_list_top":city_list_top, 
+                        "city_list_bottom":city_list_bottom,
+                        "property_slide_total":property_slide_total,
+                        "carousel_properties":carousel_properties
+                    })
                      
         with open('/home/ubuntu/workspace/clandestine1/templates/HTML_generator_templates/generated_HTML/real-estate.html', 'w+') as final_html:   
             final_html.write(t.render(c))
             final_html.close()
-        #print t.render(c)
+
+    def generateCityPages(self):   
+        cities = City.objects.all().filter(active=1)
+        for city in cities: 
+            city.property_count_current = 0 if (city.property_count_current is None) else city.property_count_current 
+            total_pages = math.ceil(float(city.property_count_current) / float(15))
+            print (''+ city.name +' has ' + str(city.property_count_current) + ' on ' + str(total_pages) + ' pages' )
+            for current_page in range(1, int(total_pages)+1):
+                    
+                next_page_no = current_page+1 if total_pages>1 else 0
+                prev_page_no = current_page-1 if total_pages>1 else 0            
+                next_page_no = 1    
+                with open('/home/ubuntu/workspace/clandestine1/templates/HTML_generator_templates/city-template.html', 'r') as f:
+                    city_HTML = File(f).read()
+                t = Template(unicode(city_HTML))  
+                
+                seo_url = re.sub(r'[^A-za-z0-9- ]', r'', city.name.lower() + '-' + city.state.lower())
+                seo_url = re.sub(r' ', r'-', seo_url)
+                seo_url = re.sub(r'-+', r'-', seo_url)            
+                
+    
+                c = Context({   "city":city, 
+                                "seo_url":seo_url,
+                                "total_pages":total_pages,
+                                "current_page":current_page,
+                                "prev_page_no":prev_page_no,
+                                "next_page_no":next_page_no
+                            })
+                cur_page_url = ('-%d' % current_page) if current_page>1 else ''
+                with open('/home/ubuntu/workspace/clandestine1/templates/HTML_generator_templates/generated_HTML/locations/' + seo_url + cur_page_url + '.html', 'w+') as final_html:   
+                    final_html.write(t.render(c))
+                    final_html.close()        
+            
+            
 
 class Step5Cleanup(object):
 

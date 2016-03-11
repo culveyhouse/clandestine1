@@ -15,15 +15,8 @@
 	<!-- DLC ZZZ styles and js from homesnacks website to make nav work properly -->
 	<link rel='stylesheet' id='pages-front-css-css'  href='http://www.homesnacks.net/wp-content/plugins/facebook-comment-by-vivacity/css/fb-comments-hidewpcomments-pages.css?ver=4.1.10' type='text/css' media='all' />
 	<link rel='stylesheet' id='flymag-bootstrap-css'  href='http://www.homesnacks.net/wp-content/themes/flymag/bootstrap/css/bootstrap.min.css?ver=1' type='text/css' media='all' />
-
-
-		<!-- DLC ZZZ the fonts.googleapis.com link below is taking a very long time to resolve locally, so may have to omit it temporarily -->
-
-			<link rel='stylesheet' id='flymag-body-fonts-css'  href='https://fonts.googleapis.com/css?family=Roboto%3A300%2C400&#038;ver=4.1.10' type='text/css' media='all' />
-			<link rel='stylesheet' id='flymag-headings-fonts-css'  href='https://fonts.googleapis.com/css?family=Oswald%3A400%2C300%2C700&#038;ver=4.1.10' type='text/css' media='all' />
-
-		<!-- DLC ZZZ the fonts.googleapis.com link above is taking a very long time to resolve locally, so may have to omit it temporarily -->
-
+	<link rel='stylesheet' id='flymag-body-fonts-css'  href='https://fonts.googleapis.com/css?family=Roboto%3A300%2C400&#038;ver=4.1.10' type='text/css' media='all' />
+	<link rel='stylesheet' id='flymag-headings-fonts-css'  href='https://fonts.googleapis.com/css?family=Oswald%3A400%2C300%2C700&#038;ver=4.1.10' type='text/css' media='all' />
 	<link rel='stylesheet' id='flymag-style-css'  href='http://www.homesnacks.net/wp-content/themes/flymag/style.css?ver=4.1.10' type='text/css' media='all' />
 	<style id='flymag-style-inline-css' type='text/css'>
 	.social-navigation li:hover > a::before, a, a:hover, a:focus, a:active { color:}
@@ -53,9 +46,9 @@
 	<script type='text/javascript' src='http://www.homesnacks.net/wp-includes/js/jquery/jquery.js?ver=1.11.1'></script>
 	<script type='text/javascript' src='http://www.homesnacks.net/wp-includes/js/jquery/jquery-migrate.min.js?ver=1.2.1'></script>
   	<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
-	<link rel="stylesheet" href="css/bootstrap-iso.css">
-	<link rel='stylesheet' href='css/styles.css' type='text/css' media='all' />
-	<!-- DLC ZZZ end of styles and js from homesnacks -->
+	<link rel="stylesheet" href="http://www.homesnacks.net/real-estate/css/bootstrap-iso.css">
+	<link rel='stylesheet' href='http://www.homesnacks.net/real-estate/css/styles.css' type='text/css' media='all' />
+
 	<script>
 	  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
 	  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
@@ -145,145 +138,27 @@
 						<!-- Indicators -->
 						<ol class="carousel-indicators indicators-rehome">
 							<li data-target="#myCarousel" data-slide-to="0" class="active"></li>
-							<li data-target="#myCarousel" data-slide-to="1"></li>
-							<li data-target="#myCarousel" data-slide-to="2"></li>
-							<li data-target="#myCarousel" data-slide-to="3"></li>
-							<li data-target="#myCarousel" data-slide-to="4"></li>
-							<li data-target="#myCarousel" data-slide-to="5"></li>
-							<li data-target="#myCarousel" data-slide-to="6"></li>
-							<li data-target="#myCarousel" data-slide-to="7"></li>
-							<li data-target="#myCarousel" data-slide-to="8"></li>
-							<li data-target="#myCarousel" data-slide-to="9"></li>
+							{% for slide in property_slide_total %}
+							<li data-target="#myCarousel" data-slide-to="{{slide}}"></li>{% endfor %}
 						</ol>
 
 					  <!-- Wrapper for slides -->
 					  <div class="carousel-inner" role="listbox">
-						<div class="item active listing-plates">
-							<a href="http://www.homesnacks.net/real-estate/8024-w-somerset-ave-danville-il-60813-201651/">
-							<div class="listing-plates-inner">
-								<img class="listing-photo" src="images/Photo201651-1.jpeg" alt="">
-								<div class="carousel-details-1">
-									<p><a href="http://www.homesnacks.net/real-estate/8024-w-somerset-ave-danville-il-60813-201651/">Danville, IL</a></p>
+					  	{% for property in carousel_properties %}
+							<div class="item {% if forloop.first %}active{% endif %} listing-plates">
+								<a href="http://www.homesnacks.net/real-estate/{{property.seo_url}}/">
+								<div class="listing-plates-inner">
+									<img class="listing-photo" src="http://www.homesnacks.net/real-estate/photos/{{property.property_primary_photo_url}}" alt="">
+									<div class="carousel-details-1">
+										<p><a href="http://www.homesnacks.net/real-estate/{{property.property_seo}}/">{{property.property_city_state}}</a></p>
+									</div>
+									<div class="carousel-details-2">
+										<p>${{property.formatted_display_list_price}}</p>
+									</div>
 								</div>
-								<div class="carousel-details-2">
-									<p>$143,500</p>
-								</div>
+								</a>
 							</div>
-							</a>
-						</div>
-
-						<div class="item listing-plates">
-							<a href="http://www.homesnacks.net/real-estate/30300-county-rd-19-st-ignatio-il-60443-201717/">
-						  	<div class="listing-plates-inner">
-								<img class="listing-photo" src="images/Photo201717-1.jpeg" alt="">
-								<div class="carousel-details-1">
-									<p><a href="http://www.homesnacks.net/real-estate/30300-county-rd-19-st-ignatio-il-60443-201717/">St. Ignatio, IL</a></p>
-								</div>
-								<div class="carousel-details-2">
-									<p>$127,995</p>
-								</div>
-							</div>
-							</a>
-						</div>
-
-						<div class="item listing-plates">
-						<a href="http://www.homesnacks.net/real-estate/180-s-mellinger-blvd-deerfield-il-60285-201762/">
-						  <div class="listing-plates-inner">
-
-								<img class="listing-photo" src="images/Photo201762-1.jpeg" alt="">
-								<div class="carousel-details-1">
-									<p><a href="http://www.homesnacks.net/real-estate/180-s-mellinger-blvd-deerfield-il-60285-201762/">Deerfield, IL</a></p>
-								</div>
-								<div class="carousel-details-2">
-									<p>$108,000</p>
-								</div>
-							</div>
-							</a>
-						</div>
-
-						<div class="item listing-plates">
-						  <a href="http://www.homesnacks.net/real-estate/70259-dawn-dr-apt-12-seymoursvilletown-in-46601-201796/">
-						  <div class="listing-plates-inner">
-								<img class="listing-photo" src="images/Photo201796-1.jpeg" alt="">
-								<div class="carousel-details-1">
-									<p><a href="http://www.homesnacks.net/real-estate/70259-dawn-dr-apt-12-seymoursvilletown-in-46601-201796/">Seymoursvilletown, IN</a></p>
-								</div>
-								<div class="carousel-details-2">
-									<p>$155,500</p>
-								</div>
-							</div>
-							</a>
-						</div>
-
-						<div class="item listing-plates">
-						<a href="http://www.homesnacks.net/real-estate/5325-jane-ave-blake-corner-il-60485-201820/">
-						  <div class="listing-plates-inner">
-								<img class="listing-photo" src="images/Photo201820-1.jpeg" alt="">
-								<div class="carousel-details-1">
-									<p><a href="http://www.homesnacks.net/real-estate/5325-jane-ave-blake-corner-il-60485-201820/">Blake Corner, IL</a></p>
-								</div>
-								<div class="carousel-details-2">
-									<p>$217,300</p>
-								</div>
-							</div>
-							</a>
-						</div>
-
-						<div class="item listing-plates">
-						<a href="http://www.homesnacks.net/real-estate/45024-farmers-lake-dr-fon-du-lac-in-46524-201834/">
-						  <div class="listing-plates-inner">
-							<img class="listing-photo" src="images/Photo201834-1.jpeg" alt="">
-								<div class="carousel-details-1">
-									<p><a href="http://www.homesnacks.net/real-estate/45024-farmers-lake-dr-fon-du-lac-in-46524-201834/">Fon-du-Lac, IN</a></p>
-								</div>
-								<div class="carousel-details-2">
-									<p>$101,000</p>
-								</div>
-							</div>
-							</a>
-						</div>
-
-						<div class="item listing-plates">
-						<a href="http://www.homesnacks.net/real-estate/56428-st-hwy-19-springenflugen-il-60585-201859/">
-						  <div class="listing-plates-inner">
-							<img class="listing-photo" src="images/Photo201859-1.jpeg" alt="">
-								<div class="carousel-details-1">
-									<p><a href="http://www.homesnacks.net/real-estate/56428-st-hwy-19-springenflugen-il-60585-201859/">Springenflugen, IL</a></p>
-								</div>
-								<div class="carousel-details-2">
-									<p>$172,500</p>
-								</div>
-							</div>
-							</a>
-						</div>
-
-						<div class="item listing-plates">
-						<a href="http://www.homesnacks.net/real-estate/29524-sunset-blvd-bear-il-60485-201915/">
-						  <div class="listing-plates-inner">
-							<img class="listing-photo" src="images/Photo201915-1.jpeg" alt="">
-								<div class="carousel-details-1">
-									<p><a href="http://www.homesnacks.net/real-estate/29524-sunset-blvd-bear-il-60485-201915/">Bear, IL</a></p>
-								</div>
-								<div class="carousel-details-2">
-									<p>$221,000</p>
-								</div>
-							</div>
-							</a>
-						</div>
-
-						<div class="item listing-plates">
-						<a href="http://www.homesnacks.net/real-estate/5757-n-sevier-mountain-dr-three-bluffs-in-60505-201943/">
-						  <div class="listing-plates-inner">
-							<img class="listing-photo" src="images/Photo201943-1.jpeg" alt="">
-								<div class="carousel-details-1">
-									<p><a href="http://www.homesnacks.net/real-estate/5757-n-sevier-mountain-dr-three-bluffs-in-60505-201943/">Three Bluffs, IN</a></p>
-								</div>
-								<div class="carousel-details-2">
-									<p>$103,250</p>
-								</div>
-							</div>
-							</a>
-						</div>
+						{% endfor %}
 
 					  </div>
 
@@ -309,36 +184,8 @@
 				<div class="geo-list">
 					<div class="geo-columns clearfix">
 						<ul>
-							<li><a class="title geo-link" href="http://www.homesnacks.net/real-estate/andaroth-il/">An'daroth, IL</a>&nbsp;<span class="geo-count">(9)</span></li>
-							<li><a class="title geo-link" href="http://www.homesnacks.net/real-estate/ash-il/">Ash, IL</a>&nbsp;<span class="geo-count">(7)</span></li>
-							<li><a class="title geo-link" href="http://www.homesnacks.net/real-estate/belleville-il/">Belleville, IL</a>&nbsp;<span class="geo-count">(12)</span></li>
-							<li><a class="title geo-link" href="http://www.homesnacks.net/real-estate/blakesville-il/">Blakesville, IL</a>&nbsp;<span class="geo-count">(8)</span></li>
-							<li><a class="title geo-link" href="http://www.homesnacks.net/real-estate/bordertown-il/">Bordertown, IL</a>&nbsp;<span class="geo-count">(2)</span></li>
-							<li><a class="title geo-link" href="http://www.homesnacks.net/real-estate/champaign-il/">Champaign, IL</a>&nbsp;<span class="geo-count">(1)</span></li>
-							<li><a class="title geo-link" href="http://www.homesnacks.net/real-estate/chernobyl-il/">Chernobyl, IL</a>&nbsp;<span class="geo-count">(11)</span></li>
-							<li><a class="title geo-link" href="http://www.homesnacks.net/real-estate/cthulhu-il/">Cthulhu, IL</a>&nbsp;<span class="geo-count">(9)</span></li>
-							<li><a class="title geo-link" href="http://www.homesnacks.net/real-estate/danville-il/">Danville, IL</a>&nbsp;<span class="geo-count">(25)</span></li>
-							<li><a class="title geo-link" href="http://www.homesnacks.net/real-estate/elwynn-forest-il/">Elwynn Forest, IL</a>&nbsp;<span class="geo-count">(8)</span></li>
-							<li><a class="title geo-link" href="http://www.homesnacks.net/real-estate/flint-on-the-river-il/">Flint on the River, IL</a>&nbsp;<span class="geo-count">(11)</span></li>
-							<li><a class="title geo-link" href="http://www.homesnacks.net/real-estate/francistown-il/">Francistown, IL</a>&nbsp;<span class="geo-count">(3)</span></li>
-							<li><a class="title geo-link" href="http://www.homesnacks.net/real-estate/funky-town-il/">Funky Town, IL</a>&nbsp;<span class="geo-count">(1)</span></li>
-							<li><a class="title geo-link" href="http://www.homesnacks.net/real-estate/gas-city-in/">Gas City, IN</a>&nbsp;<span class="geo-count">(8)</span></li>
-							<li><a class="title geo-link" href="http://www.homesnacks.net/real-estate/gesprungenflugen-il/">Gesprungenflugen, IL</a>&nbsp;<span class="geo-count">(23)</span></li>
-							<li><a class="title geo-link" href="http://www.homesnacks.net/real-estate/glomulous-in/">Glomulous, IN</a>&nbsp;<span class="geo-count">(11)</span></li>
-							<li><a class="title geo-link" href="http://www.homesnacks.net/real-estate/greater-township-of-rancho-santa-maria-magdalena-margarita-il/">Greater Township of Rancho Santa Maria Magdalena Margarita, IL</a>&nbsp;<span class="geo-count">(7)</span></li>
-							<li><a class="title geo-link" href="http://www.homesnacks.net/real-estate/hells-bells-il/">Hell's Bells, IL</a>&nbsp;<span class="geo-count">(9)</span></li>
-							<li><a class="title geo-link" href="http://www.homesnacks.net/real-estate/icecrown-in/">Icecrown, IN</a>&nbsp;<span class="geo-count">(7)</span></li>
-							<li><a class="title geo-link" href="http://www.homesnacks.net/real-estate/kalimdor-il/">Kalimdor, IL</a>&nbsp;<span class="geo-count">(15)</span></li>
-							<li><a class="title geo-link" href="http://www.homesnacks.net/real-estate/khaz-modan-il/">Khaz Modan, IL</a>&nbsp;<span class="geo-count">(2)</span></li>
-							<li><a class="title geo-link" href="http://www.homesnacks.net/real-estate/madonna-city-in/">Madonna City, IN</a>&nbsp;<span class="geo-count">(13)</span></li>
-							<li><a class="title geo-link" href="http://www.homesnacks.net/real-estate/other-in-cities-in/">Other IN Cities, IN</a>&nbsp;<span class="geo-count">(7)</span></li>
-							<li><a class="title geo-link" href="http://www.homesnacks.net/real-estate/pandaria-center-il/">Pandaria Center, IL</a>&nbsp;<span class="geo-count">(7)</span></li>
-							<li><a class="title geo-link" href="http://www.homesnacks.net/real-estate/skyreach-il/">Skyreach, IL</a>&nbsp;<span class="geo-count">(12)</span></li>
-							<li><a class="title geo-link" href="http://www.homesnacks.net/real-estate/spamtastic-center-il/">Spamtastic Center, IL</a>&nbsp;<span class="geo-count">(7)</span></li>
-							<li><a class="title geo-link" href="http://www.homesnacks.net/real-estate/springfield-il/">Springfield, IL</a>&nbsp;<span class="geo-count">(3)</span></li>
-							<li><a class="title geo-link" href="http://www.homesnacks.net/real-estate/starkbomb-falls-il/">Starkbomb Falls, IL</a>&nbsp;<span class="geo-count">(9)</span></li>
-							<li><a class="title geo-link" href="http://www.homesnacks.net/real-estate/wayside-il/">Wayside, IL</a>&nbsp;<span class="geo-count">(14)</span></li>
-							<li><a class="title geo-link" href="http://www.homesnacks.net/real-estate/zenith-il/">Zenith, IL</a>&nbsp;<span class="geo-count">(10)</span></li>
+							{% for city in city_list_bottom %}<li><a class="title geo-link" href="http://www.homesnacks.net/real-estate/{{city.city_state_seo}}/">{{city.city_state}}</a>&nbsp;<span class="geo-count">({{city.property_count}})</span></li>
+							{% endfor %}
 						</ul>
 					</div>
 				</div>
