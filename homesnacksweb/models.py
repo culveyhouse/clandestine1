@@ -122,13 +122,14 @@ class PropertyCurrent(models.Model):
     rooms_total = models.DecimalField(decimal_places=2, max_digits=5, default=0, null=True, blank=True)        
     list_date = models.DateField(default=date(2015, 1, 1) , null=True, blank=True)        
     size = models.PositiveIntegerField(default=0)
+    house_style = models.CharField(max_length=255, null=True, blank=True)
     geo_lat = models.DecimalField(decimal_places=12, max_digits=24, null=True, blank=True)
     geo_long = models.DecimalField(decimal_places=12, max_digits=24, null=True, blank=True)
     photo_count = models.PositiveIntegerField(default=0)
     status = models.PositiveSmallIntegerField(choices=PROPERTY_STATUS, default=STATUS_ACTIVE, 
         help_text='For sale / sold status of the property',
         validators=[MinValueValidator(1),
-                    MaxValueValidator(4)])
+                    MaxValueValidator(9)])
     data_cycle = models.ForeignKey('DataCycle', null=True, blank=True)
     date_added = models.DateTimeField(auto_now_add=True)
     date_updated = models.DateTimeField(auto_now=True)

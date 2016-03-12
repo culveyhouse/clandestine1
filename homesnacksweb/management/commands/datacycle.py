@@ -175,6 +175,8 @@ class Step3Convert(object):
                 p.days_on_market = property.days_on_market
                 p.photo_count = property.photo_count
                 p.size = property.size
+                p.house_style = property.house_style
+                p.property_description = property.property_description
                 p.save()
                 self.cmd.stdout.write(self.cmd.style.SUCCESS("Found & updated %s-%s" % (p.mls_id, p.mls_property_id) ))
             except: 
@@ -190,7 +192,7 @@ class Step3Convert(object):
         cursor = connection.cursor()
         imported_sql =  "SELECT mls_id, MLS_Number, Street_Number, Direction, Street_Name, " \
                         "City, State, Zip_Code, List_Price, Bedrooms, Ttl_Baths, Days_On_Market, " \
-                        "Photo_Count, Total_SF_Apx " \
+                        "Photo_Count, Total_SF_Apx, Style, Public_Remarks " \
                         "FROM homesnacksweb_propertyimport WHERE length(City)>0 and length(State)>0 "        
         cursor.execute(imported_sql)
         properties = cursor.fetchall()
@@ -212,6 +214,8 @@ class Step3Convert(object):
             days_on_market =    property[11]
             photo_count =       property[12]
             size =              property[13]
+            house_style =       property[14]
+            property_description = property[15] 
             full_address = "%s%s %s" % (street_number.title(), (' ' + direction.upper() if (direction is not None and len(direction)>0) else ''), street_name.title()) 
             city_state_zip = "%s, %s %s" % (city.title(), state.upper(), zip_code)
             seo_url = re.sub(r'[^A-za-z0-9- ]', r'', full_address.lower() + '-' + city_state_zip.lower() + '-' + str(mls_id) + mls_property_id)
@@ -231,13 +235,12 @@ class Step3Convert(object):
                 self.cmd.stdout.write(self.cmd.style.SUCCESS('price/beds/baths/dom/photoct/sharted "%s/%s/%s/%s/%s/%s" sharted.' % (list_price, bedrooms, bathrooms, days_on_market_int, photo_count_int, size_int)))      
 
             #self.cmd.stdout.write(self.cmd.style.SUCCESS('%s-%s | addr: %s, %s  /  seo: %s' % (str(mls_id), mls_property_id, full_address, city_state_zip, seo_url)))       
-            
             propertySEOs.append(PropertyCurrent(
                 mls_id=int(mls_id), mls_property_id=mls_property_id, address_line_1=full_address, 
                 city=city.title(), state=state.upper(), zip_code=zip_code, price=list_price_float, 
                 bedrooms_total=bedrooms_float, bathrooms_total=bathrooms_float, seo_url=seo_url,
                 status=PropertyCurrent.STATUS_ACTIVE, days_on_market=days_on_market_int, photo_count=photo_count_int, 
-                size=size_int
+                size=size_int, house_style=house_style, property_description=property_description
             ))
         
         cursor.close()
@@ -270,7 +273,7 @@ class Step4Generate(object):
         return dc_step
 
     def generateHomePage(self):
-
+        self.cmd.stdout.write(self.cmd.style.SUCCESS('Beginning the home page HTML page generation'))
         with open('/home/ubuntu/workspace/clandestine1/templates/HTML_generator_templates/real-estate-template.html', 'r') as f:
             home_page_HTML = File(f).read()
         t = Template(unicode(home_page_HTML))
@@ -323,6 +326,7 @@ class Step4Generate(object):
             final_html.close()
 
     def generateCityPages(self):   
+        self.cmd.stdout.write(self.cmd.style.SUCCESS('Beginning the city HTML page generation'))
         cities = City.objects.all().filter(active=1)
         for city in cities: 
             city.property_count_current = 0 if (city.property_count_current is None) else city.property_count_current 
@@ -370,10 +374,16 @@ class Step4Generate(object):
                     final_html.write(t.render(c))
                     final_html.close()        
     
-    def generatePDP(self):   
+    def generatePDP(self): 
+        self.cmd.stdout.write(self.cmd.style.SUCCESS('Beginning the PDP HTML page generation'))
         property_batch_size = 100
+        
+        with open('/home/ubuntu/workspace/clandestine1/templates/HTML_generator_templates/pdp-template.html', 'r') as f:
+            city_HTML = File(f).read()
+            t = Template(unicode(city_HTML))        
+        
         property_total = PropertyCurrent.objects.exclude(status=PropertyCurrent.STATUS_HIDDEN).count()
-        print(property_total)
+        
         batches = range(int(math.ceil(property_total / property_batch_size))+1)
         
         for batch in batches:
@@ -384,10 +394,27 @@ class Step4Generate(object):
                     max((batch * property_batch_size),property_total)))))
             properties = PropertyCurrent.objects.exclude(status=PropertyCurrent.STATUS_HIDDEN).order_by('days_on_market')[(batch * property_batch_size):((batch+1) * (property_batch_size))]
             for property in properties: 
-                pass
                 
-                
+                city_seo_url = re.sub(r'[^A-za-z0-9- ]', r'', property.city.lower() + '-' + property.state.lower())
+                city_seo_url = re.sub(r' ', r'-', city_seo_url)
+                city_seo_url = re.sub(r'-+', r'-', city_seo_url) 
+                photo_loop = range(1, property.photo_count+1)
+                property.formatted_display_list_price = '{:,.0f}'.format(property.price)  
+                property.property_primary_photo_url = '%d/Photo%s-1.jpeg' % (property.mls_id, property.mls_property_id)
+                property.property_city_state = ', '.join([property.city, property.state])
+                property.formatted_total_beds = '{0:g}'.format(float(property.bedrooms_total))
+                property.formatted_total_baths = '{0:g}'.format(float(property.bathrooms_total))
+                property.formatted_sqft = '{:,}'.format(int(property.size))
 
+                c = Context({   
+                                "property":property,
+                                "city_seo_url":city_seo_url,
+                                "photo_loop":photo_loop
+                            })
+                
+                with open('/home/ubuntu/workspace/clandestine1/templates/HTML_generator_templates/generated_HTML/properties/' + property.seo_url + '.html', 'w+') as final_html:   
+                    final_html.write(t.render(c))
+                    final_html.close()                  
 
 class Step5Cleanup(object):
 
