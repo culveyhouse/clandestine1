@@ -266,6 +266,7 @@ class Step4Generate(object):
         
         homepage_html = self.generateHomePage()
         city_pages_html = self.generateCityPages()
+        pdp_pages_html = self.generatePDP()
         return dc_step
 
     def generateHomePage(self):
@@ -328,7 +329,7 @@ class Step4Generate(object):
             total_pages = int(math.ceil(float(city.property_count_current) / float(15)))
             if total_pages > 1:
                 self.cmd.stdout.write(self.cmd.style.SUCCESS(
-                    '%s  has %s  props on %s pages' % (city.name,str(city.property_count_current),str(total_pages))))                
+                    '%s has %s props on %s pages' % (city.name, str(city.property_count_current), str(total_pages))))                
             for current_page in range(1, int(total_pages)+1):
                     
                 next_page_no = current_page+1 if total_pages>1 else 0
@@ -368,8 +369,25 @@ class Step4Generate(object):
                 with open('/home/ubuntu/workspace/clandestine1/templates/HTML_generator_templates/generated_HTML/locations/' + seo_url + cur_page_url + '.html', 'w+') as final_html:   
                     final_html.write(t.render(c))
                     final_html.close()        
-            
-            
+    
+    def generatePDP(self):   
+        property_batch_size = 100
+        property_total = PropertyCurrent.objects.exclude(status=PropertyCurrent.STATUS_HIDDEN).count()
+        print(property_total)
+        batches = range(int(math.ceil(property_total / property_batch_size))+1)
+        
+        for batch in batches:
+            self.cmd.stdout.write(self.cmd.style.SUCCESS(
+                'Writing property batch %s of %s, %s of %s' % (str(batch+1), len(batches), (batch * property_batch_size), 
+                    min(max((batch * property_batch_size),(batch+1) * property_batch_size), 
+                    max(property_total,(batch+1) * property_batch_size),
+                    max((batch * property_batch_size),property_total)))))
+            properties = PropertyCurrent.objects.exclude(status=PropertyCurrent.STATUS_HIDDEN).order_by('days_on_market')[(batch * property_batch_size):((batch+1) * (property_batch_size))]
+            for property in properties: 
+                pass
+                
+                
+
 
 class Step5Cleanup(object):
 

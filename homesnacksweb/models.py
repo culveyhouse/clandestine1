@@ -74,11 +74,13 @@ class PropertyCurrent(models.Model):
     STATUS_PENDING = 2
     STATUS_SOLD = 3
     STATUS_OFF_MARKET = 4
+    STATUS_HIDDEN = 9
     PROPERTY_STATUS = (
         (STATUS_ACTIVE, 'Active'),
         (STATUS_PENDING, 'Pending'),
         (STATUS_SOLD, 'Sold'),
-        (STATUS_OFF_MARKET, 'Off Market')
+        (STATUS_OFF_MARKET, 'Off Market'),
+        (STATUS_HIDDEN, 'Hidden')
     )
     
     user = models.ForeignKey(User, null=True, blank=True)
