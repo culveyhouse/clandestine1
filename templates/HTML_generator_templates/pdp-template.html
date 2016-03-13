@@ -331,82 +331,27 @@
 
 
 			<div class="city-houses pdp-box clearfix">
+				{% for nearby_property in nearby_properties %}
 				<div class="city-property-box clearfix">
 					<div class="box-top-info">
-						<a href="http://www.homesnacks.net/real-estate/105-1st-ln-1-danville-il-61832-201651/">
-						<span class="box-address">1214 Bryan Ave. #1</span>
-						<span class="box-city-st-zip">Danville, IL&nbsp;&nbsp;61832</span>
+						<a href="http://www.homesnacks.net/real-estate/{{nearby_property.seo_url}}/">
+						<span class="box-address">{{nearby_property.address_line_1}}</span>
+						<span class="box-city-st-zip">{{nearby_property.city}}, {{nearby_property.state}}&nbsp;{{nearby_property.zip_code}}</span>
 						</a>
-						<span class="box-list-price">$126,250</span>
+						<span class="box-list-price">${{nearby_property.formatted_display_list_price}}</span>
 					</div>
 					<div class="box-photo-container">
-						<a href="http://www.homesnacks.net/real-estate/105-1st-ln-1-danville-il-61832-201651/"><img class="box-photo" src="../images/Photo201651-1.jpeg" alt=""></a>
+						<a href="http://www.homesnacks.net/real-estate/{{nearby_property.seo_url}}/"><img class="box-photo" src="http://www.homesnacks.net/real-estate/photos/{{nearby_property.mls_id}}/Photo{{nearby_property.mls_property_id}}-1.jpeg" alt=""></a>
 					</div>
 					<div class="box-footer-info">
-						<span class="box-br-ba">3 BR</span>
+						<span class="box-br-ba">{{nearby_property.formatted_total_beds}} BR</span>
 						<span class="box-footer-info-sep"></span>
-						<span class="box-br-ba">2.5 BA</span>
+						<span class="box-br-ba">{{nearby_property.formatted_total_baths}} BA</span>
 						<span class="box-footer-info-sep"></span>
-						<span class="box-sqft">2,250 sq.ft.</span>
+						<span class="box-sqft">{{nearby_property.formatted_sqft}} sq.ft.</span>
 					</div>
 				</div>
-				<div class="city-property-box pdp-box clearfix">
-					<div class="box-top-info">
-						<a href="http://www.homesnacks.net/real-estate/105-1st-ln-1-danville-il-61832-201651/">
-						<span class="box-address">35825 Devil's Soupbowl Dr.</span>
-						<span class="box-city-st-zip">Danville, IL&nbsp;&nbsp;61832</span>
-						</a>
-						<span class="box-list-price">$75,250</span>
-					</div>
-					<div class="box-photo-container">
-						<a href="http://www.homesnacks.net/real-estate/105-1st-ln-1-danville-il-61832-201651/"><img class="box-photo" src="../images/Photo200969-1.jpeg" alt=""></a>
-					</div>
-					<div class="box-footer-info">
-						<span class="box-br-ba">3 BR</span>
-						<span class="box-footer-info-sep"></span>
-						<span class="box-br-ba">2 BA</span>
-						<span class="box-footer-info-sep"></span>
-						<span class="box-sqft">2,024 sq.ft.</span>
-					</div>
-				</div>
-				<div class="city-property-box pdp-box clearfix">
-					<div class="box-top-info">
-						<a href="http://www.homesnacks.net/real-estate/105-1st-ln-1-danville-il-61832-201651/">
-						<span class="box-address">4844 Flippahoo Dr.</span>
-						<span class="box-city-st-zip">Danville, IL&nbsp;&nbsp;61832</span>
-						</a>
-						<span class="box-list-price">$135,333</span>
-					</div>
-					<div class="box-photo-container">
-						<a href="http://www.homesnacks.net/real-estate/105-1st-ln-1-danville-il-61832-201651/"><img class="box-photo" src="../images/Photo201615-1.jpeg" alt=""></a>
-					</div>
-					<div class="box-footer-info">
-						<span class="box-br-ba">3 BR</span>
-						<span class="box-footer-info-sep"></span>
-						<span class="box-br-ba">3 BA</span>
-						<span class="box-footer-info-sep"></span>
-						<span class="box-sqft">2,250 sq.ft.</span>
-					</div>
-				</div>
-				<div class="city-property-box pdp-box clearfix">
-					<div class="box-top-info">
-						<a href="http://www.homesnacks.net/real-estate/105-1st-ln-1-danville-il-61832-201651/">
-						<span class="box-address">47740 IL Sanitary Canal Lot #3</span>
-						<span class="box-city-st-zip">Danville, IL&nbsp;&nbsp;61832</span>
-						</a>
-						<span class="box-list-price">$29,995 (Incredible Deal!)</span>
-					</div>
-					<div class="box-photo-container">
-						<a href="http://www.homesnacks.net/real-estate/105-1st-ln-1-danville-il-61832-201651/"><img class="box-photo" src="../images/Photo201621-1.jpeg" alt=""></a>
-					</div>
-					<div class="box-footer-info">
-						<span class="box-br-ba">1 BR</span>
-						<span class="box-footer-info-sep"></span>
-						<span class="box-br-ba">0.5 BA (0uthouse in Back)</span>
-						<span class="box-footer-info-sep"></span>
-						<span class="box-sqft">2,250 sq.ft.</span>
-					</div>
-				</div>
+				{% endfor %}
 			</div>
 			</div>
 		</div>
@@ -420,32 +365,34 @@
 					<div class="cities-nearby-col clearfix">
 						<ul>
 							<li class="cities-nearby-col-head">Illinois</li>
-							<li><a class="title geo-link" href="http://www.homesnacks.net/real-estate/andaroth-il/">An'daroth</a>&nbsp;</li>
-							<li><a class="title geo-link" href="http://www.homesnacks.net/real-estate/champaign-il/">Champaign</a>&nbsp;</li>
-							<li><a class="title geo-link" href="http://www.homesnacks.net/real-estate/chernobyl-il/">Chernobyl</a>&nbsp;</li>
-							<li><a class="title geo-link" href="http://www.homesnacks.net/real-estate/cthulhu-il/">Cthulhu</a>&nbsp;</li>
-							<li><a class="title geo-link" href="http://www.homesnacks.net/real-estate/elwynn-forest-il/">Elwynn Forest</a>&nbsp;</li>
-							<li><a class="title geo-link" href="http://www.homesnacks.net/real-estate/flint-on-the-river-il/">Flint on the River</a>&nbsp;</li>
-							<li><a class="title geo-link" href="http://www.homesnacks.net/real-estate/francistown-il/">Francistown</a>&nbsp;</li>
-							<li><a class="title geo-link" href="http://www.homesnacks.net/real-estate/funky-town-il/">Funky Town</a>&nbsp;</li>
+							<li><a class="title geo-link" href="http://www.homesnacks.net/real-estate/danville-il/">Danville</a>&nbsp;</li>
+							<li><a class="title geo-link" href="http://www.homesnacks.net/real-estate/hoopeston-il/">Hoopeston</a>&nbsp;</li>
+							<li><a class="title geo-link" href="http://www.homesnacks.net/real-estate/georgetown-il/">Georgetown</a>&nbsp;</li>
+							<li><a class="title geo-link" href="http://www.homesnacks.net/real-estate/catlin-il/">Catlin</a>&nbsp;</li>
+							<li><a class="title geo-link" href="http://www.homesnacks.net/real-estate/westville-il/">Westville</a>&nbsp;</li>
+							<li><a class="title geo-link" href="http://www.homesnacks.net/real-estate/oakwood-il/">Oakwood</a>&nbsp;</li>
+							<li><a class="title geo-link" href="http://www.homesnacks.net/real-estate/rossville-il/">Rossville</a>&nbsp;</li>
+							<li><a class="title geo-link" href="http://www.homesnacks.net/real-estate/tilton-il/">Tilton</a>&nbsp;</li>
 						</ul>
 					</div>
 					<div class="cities-nearby-col clearfix">
 						<ul>
 							<li class="cities-nearby-col-head">Indiana</li>
-							<li><a class="title geo-link" href="http://www.homesnacks.net/real-estate/lafayette-in/">Lafayette</a>&nbsp;</li>
-							<li><a class="title geo-link" href="http://www.homesnacks.net/real-estate/icecrown-in/">Icecrown</a>&nbsp;</li>
-							<li><a class="title geo-link" href="http://www.homesnacks.net/real-estate/gas-city-in/">Gas City</a>&nbsp;</li>
-							<li><a class="title geo-link" href="http://www.homesnacks.net/real-estate/glomulous-in/">Glomulous</a>&nbsp;</li>
+							<li><a class="title geo-link" href="http://www.homesnacks.net/real-estate/cayuga-in/">Cayuga</a>&nbsp;</li>
+							<li><a class="title geo-link" href="http://www.homesnacks.net/real-estate/kingman-in/">Kingman</a>&nbsp;</li>
+							<li><a class="title geo-link" href="http://www.homesnacks.net/real-estate/covington-in/">Covington</a>&nbsp;</li>
+							<li><a class="title geo-link" href="http://www.homesnacks.net/real-estate/perrysville-in/">Perrysville</a>&nbsp;</li>
+							<li><a class="title geo-link" href="http://www.homesnacks.net/real-estate/attica-in/">Attica</a>&nbsp;</li>
+							<li><a class="title geo-link" href="http://www.homesnacks.net/real-estate/danville-in/">Danville</a>&nbsp;</li>
+							<li><a class="title geo-link" href="http://www.homesnacks.net/real-estate/west-lebanon-in/">West Lebanon</a>&nbsp;</li>							
+						</ul>
 					</div>
 					<div class="cities-nearby-col clearfix">
 						<ul>
-							<li class="cities-nearby-col-head">Another Metro</li>
-							<li><a class="title geo-link" href="http://www.homesnacks.net/real-estate/lafayette-in/">Fictitiousville</a>&nbsp;</li>
-							<li><a class="title geo-link" href="http://www.homesnacks.net/real-estate/icecrown-in/">Nowherelandville City</a>&nbsp;</li>
-							<li><a class="title geo-link" href="http://www.homesnacks.net/real-estate/gas-city-in/">Ulm</a>&nbsp;</li>
-							<li><a class="title geo-link" href="http://www.homesnacks.net/real-estate/glomulous-in/">Calvin Center</a>&nbsp;</li>
-					</div>
+							<li class="cities-nearby-col-head">Other Metros</li>
+							<li><a class="title geo-link" href="#">Coming Soon!</a>&nbsp;</li>
+						</ul>
+					</div>	
 				</div>
 		</div>
 

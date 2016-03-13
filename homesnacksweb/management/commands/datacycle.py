@@ -4,6 +4,7 @@ from django.template import Template, Context
 from django.core.files import File
 from homesnacksweb.models import MLS, PropertyCurrent, City, DataCycle, DataCycleStep, JobStatus
 from datetime import datetime
+from itertools import chain
 import re, sys, math
 
 class Command(BaseCommand):
@@ -406,10 +407,41 @@ class Step4Generate(object):
                 property.formatted_total_baths = '{0:g}'.format(float(property.bathrooms_total))
                 property.formatted_sqft = '{:,}'.format(int(property.size))
 
+                """ Assemble a crackerjack list of nearby homes using several techniques """
+
+                nearby_properties_in_zipcode = PropertyCurrent.objects.filter(
+                    zip_code=property.zip_code, bedrooms_total=property.bedrooms_total, bathrooms_total=property.bathrooms_total
+                    ).exclude(status=PropertyCurrent.STATUS_HIDDEN).exclude(mls_property_id=property.mls_property_id).order_by('days_on_market')[:4]
+                if len(nearby_properties_in_zipcode) < 4:
+                    nearby_properties_in_city = PropertyCurrent.objects.filter(
+                        city=property.city, bedrooms_total=property.bedrooms_total, bathrooms_total=property.bathrooms_total
+                        ).exclude(status=PropertyCurrent.STATUS_HIDDEN).exclude(mls_property_id=property.mls_property_id).order_by('days_on_market')[:4]
+                if len(nearby_properties_in_city) + len(nearby_properties_in_zipcode) < 4:
+                    nearby_properties_in_state = PropertyCurrent.objects.filter(
+                        state=property.state, bedrooms_total=property.bedrooms_total, bathrooms_total=property.bathrooms_total
+                        ).exclude(status=PropertyCurrent.STATUS_HIDDEN).exclude(mls_property_id=property.mls_property_id).order_by('days_on_market')[:4]
+
+                nearby_properties = sorted(
+                    chain(nearby_properties_in_zipcode, nearby_properties_in_city, nearby_properties_in_state),
+                    key=lambda prop: prop.days_on_market, reverse=False)
+                deduped_properties = []
+                for p in nearby_properties:
+                    if p not in deduped_properties and len(deduped_properties)<4:
+                        p.formatted_display_list_price = '{:,.0f}'.format(p.price)  
+                        p.property_primary_photo_url = '%d/Photo%s-1.jpeg' % (p.mls_id, p.mls_property_id)
+                        p.property_city_state = ', '.join([p.city, p.state])
+                        p.formatted_total_beds = '{0:g}'.format(float(p.bedrooms_total))
+                        p.formatted_total_baths = '{0:g}'.format(float(p.bathrooms_total))
+                        p.formatted_sqft = '{:,}'.format(int(p.size))
+                        deduped_properties.append(p)
+                        
+                nearby_properties = deduped_properties
+
                 c = Context({   
                                 "property":property,
                                 "city_seo_url":city_seo_url,
-                                "photo_loop":photo_loop
+                                "photo_loop":photo_loop,
+                                "nearby_properties":nearby_properties
                             })
                 
                 with open('/home/ubuntu/workspace/clandestine1/templates/HTML_generator_templates/generated_HTML/properties/' + property.seo_url + '.html', 'w+') as final_html:   
