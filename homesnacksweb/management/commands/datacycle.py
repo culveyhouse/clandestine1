@@ -158,6 +158,7 @@ class Step3Convert(object):
         self.cmd.stdout.write(self.cmd.style.SUCCESS('.1: Grabbing property object collection from _propertyimport'))        
         properties = self.generateSEOProperties()
         for property in properties:
+            
             try: 
                 #self.cmd.stdout.write(self.cmd.style.SUCCESS("Getting %s-%s" % (property.mls_id, property.mls_property_id) ))
                 p = PropertyCurrent.objects.get(
@@ -185,6 +186,9 @@ class Step3Convert(object):
                 p.sewer = property.sewer
                 p.property_type = property.property_type
                 p.family_room_level = property.family_room_level
+                p.bathrooms_full = property.bathrooms_full
+                p.bathrooms_half = property.bathrooms_half   
+                p.bedroom_dimensions_all = property.bedroom_dimensions_all
                 p.save()
                 self.cmd.stdout.write(self.cmd.style.SUCCESS("Found & updated %s-%s" % (p.mls_id, p.mls_property_id) ))
             except: 
@@ -201,7 +205,7 @@ class Step3Convert(object):
         imported_sql =  "SELECT mls_id, MLS_Number, Street_Number, Direction, Street_Name, " \
                         "City, State, Zip_Code, List_Price, Bedrooms, Ttl_Baths, Days_On_Market, " \
                         "Photo_Count, Total_SF_Apx, Style, Public_Remarks, Rooms, Year_Built, Water, Sewer, Property_Type, " \
-                        "Family_Rm_Level " \
+                        "Family_Rm_Level, Full_Baths, Partial_Baths, Bedroom1_Dim, Bedroom2_Dim, Bedroom3_Dim, Bedroom4_Dim " \
                         "FROM homesnacksweb_propertyimport WHERE length(City)>0 and length(State)>0 "        
         cursor.execute(imported_sql)
         properties = cursor.fetchall()
@@ -231,6 +235,12 @@ class Step3Convert(object):
             sewer =                 property[19]
             property_type =         property[20]
             family_room_level =     property[21]
+            bathrooms_full =        property[22]
+            bathrooms_half =        property[23]
+            bedroom_dim_1 =         property[24]
+            bedroom_dim_2 =         property[25]
+            bedroom_dim_3 =         property[26]
+            bedroom_dim_4 =         property[27]        
             
             full_address = "%s%s %s" % (street_number.title(), (' ' + direction.upper() if (direction is not None and len(direction)>0) else ''), street_name.title()) 
             city_state_zip = "%s, %s %s" % (city.title(), state.upper(), zip_code)
@@ -238,7 +248,9 @@ class Step3Convert(object):
             seo_url = re.sub(r' ', r'-', seo_url)
             seo_url = re.sub(r'-+', r'-', seo_url)
             family_room_level = str(family_room_level.strip())
-
+            bedroom_dimension_list = [bedroom_dim_1.strip().replace(' ', '') , bedroom_dim_2.strip().replace(' ', '') , bedroom_dim_3.strip().replace(' ', '') , bedroom_dim_4.strip().replace(' ', '')]
+            bedroom_dimensions = ', '.join(filter(None, bedroom_dimension_list)).lower()
+            
             try:
                 list_price_float = float(list_price)
             except ValueError, e:
@@ -286,8 +298,21 @@ class Step3Convert(object):
             except ValueError, e:
                 year_built_int = 0
                 self.cmd.stdout.write(self.cmd.style.SUCCESS('mls/id year_built %s/%s %s sharted.' % (mls_id, mls_property_id, year_built)))   
-                                         
-            self.cmd.stdout.write(self.cmd.style.SUCCESS('%s-%s | addr: %s, %s / seo: %s / ttlrms: %s' % (str(mls_id), mls_property_id, full_address, city_state_zip, seo_url, total_rooms)))       
+                                
+            try:
+                bathrooms_full_float = float(bathrooms_full)
+                print(bathrooms_full, bathrooms_full_float)
+            except ValueError, e:
+                bathrooms_full_float = 0
+                self.cmd.stdout.write(self.cmd.style.SUCCESS('mls/id bathrooms_full %s/%s %s sharted.' % (mls_id, mls_property_id, bathrooms_full)))   
+                                
+            try:
+                bathrooms_half_float = float(bathrooms_half)
+            except ValueError, e:
+                bathrooms_half_float = 0
+                self.cmd.stdout.write(self.cmd.style.SUCCESS('mls/id bathrooms_half %s/%s %s sharted.' % (mls_id, mls_property_id, bathrooms_half)))   
+       
+            self.cmd.stdout.write(self.cmd.style.SUCCESS('%s-%s | addr: %s, %s / seo: %s / bathf: %s, bathh:%s ' % (str(mls_id), mls_property_id, full_address, city_state_zip, seo_url, bathrooms_full_float, bathrooms_half_float)))       
             
             propertySEOs.append(PropertyCurrent(
                 mls_id=int(mls_id), mls_property_id=mls_property_id, address_line_1=full_address, 
@@ -295,7 +320,8 @@ class Step3Convert(object):
                 bedrooms_total=bedrooms_float, bathrooms_total=bathrooms_float, seo_url=seo_url,
                 status=PropertyCurrent.STATUS_ACTIVE, days_on_market=days_on_market_int, photo_count=photo_count_int, 
                 size=size_int, house_style=house_style, property_description=property_description, rooms_total=total_rooms_float, 
-                year_built=year_built_int, water_source=water_source, sewer=sewer, property_type=property_type, family_room_level=family_room_level
+                year_built=year_built_int, water_source=water_source, sewer=sewer, property_type=property_type, family_room_level=family_room_level,
+                bathrooms_full=bathrooms_full_float, bathrooms_half=bathrooms_half_float, bedroom_dimensions_all=bedroom_dimensions
             ))
         
         cursor.close()
@@ -461,6 +487,8 @@ class Step4Generate(object):
                 property.formatted_total_baths = '{0:g}'.format(float(property.bathrooms_total))
                 property.formatted_sqft = '{:,}'.format(int(property.size))
                 property.formatted_rooms_total = '{0:g}'.format(float(property.rooms_total))              
+                property.formatted_full_baths = '{0:g}'.format(float(property.bathrooms_full))
+                property.formatted_half_baths = '{0:g}'.format(float(property.bathrooms_total))
 
                 """ Assemble a crackerjack list of nearby homes using several techniques """
 
