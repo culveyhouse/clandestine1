@@ -186,10 +186,21 @@
 								Room Information
 							</div>
 							<ul>
-								<li># of Rooms: 9</li>
-								<li># of Family Rooms: 2</li>
+								<li>Number of Rooms: {{property.formatted_rooms_total}}</li>
+								{% if property.family_room_level %}<li>Family Room Level: {{property.family_room_level}}</li>{% endif %}
 							</ul>
 						</div>
+						<div class="extra-features-box">
+							<div class="extra-features-subhead">
+								Bedroom & Bath Information
+							</div>
+							<ul>
+								<li># of Baths (Full): 2</li>
+								<li># of Baths (Partial): 2</li>
+								<li># of Bedrooms: </li>
+								<li>Bedroom Dimensions (ft):  </li>
+							</ul>
+						</div>						
 						<div class="extra-features-box">
 							<div class="extra-features-subhead">
 								Bathroom Information

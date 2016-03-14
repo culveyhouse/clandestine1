@@ -126,6 +126,12 @@ class PropertyCurrent(models.Model):
     geo_lat = models.DecimalField(decimal_places=12, max_digits=24, null=True, blank=True)
     geo_long = models.DecimalField(decimal_places=12, max_digits=24, null=True, blank=True)
     photo_count = models.PositiveIntegerField(default=0)
+    total_rooms = models.DecimalField(decimal_places=2, max_digits=5, default=0, null=True, blank=True)
+    year_built = models.PositiveSmallIntegerField(null=True, blank=True)
+    water_source = models.CharField(max_length=255, null=True, blank=True)
+    sewer = models.CharField(max_length=255, null=True, blank=True)
+    property_type = models.CharField(max_length=255, null=True, blank=True)   
+    family_room_level = models.CharField(max_length=255, null=True, blank=True)   
     status = models.PositiveSmallIntegerField(choices=PROPERTY_STATUS, default=STATUS_ACTIVE, 
         help_text='For sale / sold status of the property',
         validators=[MinValueValidator(1),

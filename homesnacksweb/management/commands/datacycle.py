@@ -5,6 +5,7 @@ from django.core.files import File
 from homesnacksweb.models import MLS, PropertyCurrent, City, DataCycle, DataCycleStep, JobStatus
 from datetime import datetime
 from itertools import chain
+from decimal import Decimal  
 import re, sys, math
 
 class Command(BaseCommand):
@@ -178,6 +179,12 @@ class Step3Convert(object):
                 p.size = property.size
                 p.house_style = property.house_style
                 p.property_description = property.property_description
+                p.rooms_total = property.rooms_total
+                p.year_built = property.year_built
+                p.water_source = property.water_source
+                p.sewer = property.sewer
+                p.property_type = property.property_type
+                p.family_room_level = property.family_room_level
                 p.save()
                 self.cmd.stdout.write(self.cmd.style.SUCCESS("Found & updated %s-%s" % (p.mls_id, p.mls_property_id) ))
             except: 
@@ -193,7 +200,8 @@ class Step3Convert(object):
         cursor = connection.cursor()
         imported_sql =  "SELECT mls_id, MLS_Number, Street_Number, Direction, Street_Name, " \
                         "City, State, Zip_Code, List_Price, Bedrooms, Ttl_Baths, Days_On_Market, " \
-                        "Photo_Count, Total_SF_Apx, Style, Public_Remarks " \
+                        "Photo_Count, Total_SF_Apx, Style, Public_Remarks, Rooms, Year_Built, Water, Sewer, Property_Type, " \
+                        "Family_Rm_Level " \
                         "FROM homesnacksweb_propertyimport WHERE length(City)>0 and length(State)>0 "        
         cursor.execute(imported_sql)
         properties = cursor.fetchall()
@@ -201,47 +209,93 @@ class Step3Convert(object):
         propertySEOs = []  
 
         for property in properties:
-            mls_id =            property[0]
-            mls_property_id =   property[1]
-            street_number =     property[2]
-            direction =         property[3]
-            street_name =       property[4]
-            city =              property[5]
-            state =             property[6]
-            zip_code =          property[7]
-            list_price =        property[8]
-            bedrooms =          property[9]
-            bathrooms =         property[10]
-            days_on_market =    property[11]
-            photo_count =       property[12]
-            size =              property[13]
-            house_style =       property[14]
-            property_description = property[15] 
+            mls_id =                property[0]
+            mls_property_id =       property[1]
+            street_number =         property[2]
+            direction =             property[3]
+            street_name =           property[4]
+            city =                  property[5]
+            state =                 property[6]
+            zip_code =              property[7]
+            list_price =            property[8]
+            bedrooms =              property[9]
+            bathrooms =             property[10]
+            days_on_market =        property[11]
+            photo_count =           property[12]
+            size =                  property[13]
+            house_style =           property[14]
+            property_description =  property[15] 
+            total_rooms =           property[16]
+            year_built =            property[17]
+            water_source =          property[18]
+            sewer =                 property[19]
+            property_type =         property[20]
+            family_room_level =     property[21]
+            
             full_address = "%s%s %s" % (street_number.title(), (' ' + direction.upper() if (direction is not None and len(direction)>0) else ''), street_name.title()) 
             city_state_zip = "%s, %s %s" % (city.title(), state.upper(), zip_code)
             seo_url = re.sub(r'[^A-za-z0-9- ]', r'', full_address.lower() + '-' + city_state_zip.lower() + '-' + str(mls_id) + mls_property_id)
             seo_url = re.sub(r' ', r'-', seo_url)
             seo_url = re.sub(r'-+', r'-', seo_url)
+            family_room_level = str(family_room_level.strip())
+
             try:
                 list_price_float = float(list_price)
-                bedrooms_float = float(bedrooms)
-                bathrooms_float = float(bathrooms)
-                days_on_market_int = int(days_on_market.strip())
-                photo_count_int = int(photo_count.strip())
-                size_int = int(size.strip())
-                self.cmd.stdout.write(self.cmd.style.SUCCESS('price/beds/baths/dom/photoct/size "%s/%s/%s/%s/%s/%s" cleared.' % (list_price, bedrooms, bathrooms, days_on_market_int, photo_count_int, size_int)))                  
             except ValueError, e:
-                list_price_float = bedrooms_float = bathrooms_float = float(0)
-                days_on_market_int = photo_count_int = size_int = 0
-                self.cmd.stdout.write(self.cmd.style.SUCCESS('price/beds/baths/dom/photoct/sharted "%s/%s/%s/%s/%s/%s" sharted.' % (list_price, bedrooms, bathrooms, days_on_market_int, photo_count_int, size_int)))      
+                list_price_float = 0
+                self.cmd.stdout.write(self.cmd.style.SUCCESS('mls/id price %s/%s %s sharted.' % (mls_id, mls_property_id, list_price)))   
 
-            #self.cmd.stdout.write(self.cmd.style.SUCCESS('%s-%s | addr: %s, %s  /  seo: %s' % (str(mls_id), mls_property_id, full_address, city_state_zip, seo_url)))       
+            try:
+                bedrooms_float = float(bedrooms)
+            except ValueError, e:
+                bedrooms_float = 0
+                self.cmd.stdout.write(self.cmd.style.SUCCESS('mls/id bedrooms %s/%s %s sharted.' % (mls_id, mls_property_id, bedrooms)))   
+                
+            try:
+                bathrooms_float = float(bathrooms)
+            except ValueError, e:
+                bathrooms_float = 0
+                self.cmd.stdout.write(self.cmd.style.SUCCESS('mls/id bathrooms %s/%s %s sharted.' % (mls_id, mls_property_id, bathrooms)))   
+                
+            try:
+                days_on_market_int = int(days_on_market.strip())
+            except ValueError, e:
+                days_on_market_int = 0
+                self.cmd.stdout.write(self.cmd.style.SUCCESS('mls/id days_on_market_int %s/%s %s sharted.' % (mls_id, mls_property_id, days_on_market)))   
+                
+            try:
+                photo_count_int = int(photo_count.strip())
+            except ValueError, e:
+                photo_count_int = 0
+                self.cmd.stdout.write(self.cmd.style.SUCCESS('mls/id photo_count %s/%s %s sharted.' % (mls_id, mls_property_id, photo_count)))   
+                                
+            try:
+                size_int = int(size.strip())
+            except ValueError, e:
+                size_int = 0
+                self.cmd.stdout.write(self.cmd.style.SUCCESS('mls/id size %s/%s %s sharted.' % (mls_id, mls_property_id, size)))   
+                                
+            try:
+                total_rooms_float = float(total_rooms)
+            except ValueError, e:
+                total_rooms_float = 0
+                self.cmd.stdout.write(self.cmd.style.SUCCESS('mls/id total_rooms %s/%s %s sharted.' % (mls_id, mls_property_id, total_rooms)))   
+                                                
+            try:
+                year_built_int = int(year_built.strip())
+            except ValueError, e:
+                year_built_int = 0
+                self.cmd.stdout.write(self.cmd.style.SUCCESS('mls/id year_built %s/%s %s sharted.' % (mls_id, mls_property_id, year_built)))   
+                                         
+            self.cmd.stdout.write(self.cmd.style.SUCCESS('%s-%s | addr: %s, %s / seo: %s / ttlrms: %s' % (str(mls_id), mls_property_id, full_address, city_state_zip, seo_url, total_rooms)))       
+            
             propertySEOs.append(PropertyCurrent(
                 mls_id=int(mls_id), mls_property_id=mls_property_id, address_line_1=full_address, 
                 city=city.title(), state=state.upper(), zip_code=zip_code, price=list_price_float, 
                 bedrooms_total=bedrooms_float, bathrooms_total=bathrooms_float, seo_url=seo_url,
                 status=PropertyCurrent.STATUS_ACTIVE, days_on_market=days_on_market_int, photo_count=photo_count_int, 
-                size=size_int, house_style=house_style, property_description=property_description
+                size=size_int, house_style=house_style, property_description=property_description, rooms_total=total_rooms_float, 
+                year_built=year_built_int, water_source=water_source, sewer=sewer, property_type=property_type, family_room_level=family_room_level
             ))
         
         cursor.close()
@@ -406,19 +460,24 @@ class Step4Generate(object):
                 property.formatted_total_beds = '{0:g}'.format(float(property.bedrooms_total))
                 property.formatted_total_baths = '{0:g}'.format(float(property.bathrooms_total))
                 property.formatted_sqft = '{:,}'.format(int(property.size))
+                property.formatted_rooms_total = '{0:g}'.format(float(property.rooms_total))              
 
                 """ Assemble a crackerjack list of nearby homes using several techniques """
 
+                nearby_properties_in_zipcode = []
+                nearby_properties_in_city = []
+                nearby_properties_in_state = []
+                
                 nearby_properties_in_zipcode = PropertyCurrent.objects.filter(
-                    zip_code=property.zip_code, bedrooms_total=property.bedrooms_total, bathrooms_total=property.bathrooms_total
+                    zip_code=property.zip_code, bedrooms_total=property.bedrooms_total, bathrooms_total__range=(property.bathrooms_total-Decimal(0.5),property.bathrooms_total+Decimal(0.5))
                     ).exclude(status=PropertyCurrent.STATUS_HIDDEN).exclude(mls_property_id=property.mls_property_id).order_by('days_on_market')[:4]
                 if len(nearby_properties_in_zipcode) < 4:
                     nearby_properties_in_city = PropertyCurrent.objects.filter(
-                        city=property.city, bedrooms_total=property.bedrooms_total, bathrooms_total=property.bathrooms_total
+                        city=property.city, bedrooms_total=property.bedrooms_total, bathrooms_total__range=(property.bathrooms_total-Decimal(0.5),property.bathrooms_total+Decimal(0.5))
                         ).exclude(status=PropertyCurrent.STATUS_HIDDEN).exclude(mls_property_id=property.mls_property_id).order_by('days_on_market')[:4]
                 if len(nearby_properties_in_city) + len(nearby_properties_in_zipcode) < 4:
                     nearby_properties_in_state = PropertyCurrent.objects.filter(
-                        state=property.state, bedrooms_total=property.bedrooms_total, bathrooms_total=property.bathrooms_total
+                        state=property.state, bedrooms_total=property.bedrooms_total, bathrooms_total__range=(property.bathrooms_total-Decimal(0.5),property.bathrooms_total+Decimal(0.5))
                         ).exclude(status=PropertyCurrent.STATUS_HIDDEN).exclude(mls_property_id=property.mls_property_id).order_by('days_on_market')[:4]
 
                 nearby_properties = sorted(
