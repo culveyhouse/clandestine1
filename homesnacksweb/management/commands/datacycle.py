@@ -166,29 +166,18 @@ class Step3Convert(object):
                     mls_property_id=property.mls_property_id
                 )
                 #self.cmd.stdout.write(self.cmd.style.SUCCESS("Found %s-%s, id is %s" % (p.mls_id, p.mls_property_id, p.id) ))
-                p.address_line_1=property.address_line_1
-                p.city=property.city
-                p.state=property.state
-                p.zip_code=property.zip_code
-                p.price=property.price
-                p.bedrooms_total=property.bedrooms_total
-                p.bathrooms_total=property.bathrooms_total
-                p.seo_url=property.seo_url   
-                p.status = PropertyCurrent.STATUS_ACTIVE
-                p.days_on_market = property.days_on_market
-                p.photo_count = property.photo_count
-                p.size = property.size
-                p.house_style = property.house_style
-                p.property_description = property.property_description
-                p.rooms_total = property.rooms_total
-                p.year_built = property.year_built
-                p.water_source = property.water_source
-                p.sewer = property.sewer
-                p.property_type = property.property_type
-                p.family_room_level = property.family_room_level
-                p.bathrooms_full = property.bathrooms_full
-                p.bathrooms_half = property.bathrooms_half   
-                p.bedroom_dimensions_all = property.bedroom_dimensions_all
+                
+                for field in [
+                    'address_line_1','city','state','zip_code','price','bedrooms_total','bathrooms_total','seo_url',
+                    'status','days_on_market','photo_count','size','house_style','property_description','rooms_total',
+                    'year_built','water_source','sewer','property_type','family_room_level','bathrooms_full',
+                    'bathrooms_half','bedroom_dimensions_all','living_room_dimensions','living_room_flooring',
+                    'living_room_level','attic_info','basement_info', 'heating_info', 'cooling_info', 'garage_info', 
+                    'fireplace_info', 'exterior_features', 'roof_info', 'foundation_info', 'lot_dimensions', 'lot_description',
+                    'school_elementary', 'school_middle', 'school_high'
+                ]:
+                    exec('p.' + field + '=property.' + field)
+
                 p.save()
                 self.cmd.stdout.write(self.cmd.style.SUCCESS("Found & updated %s-%s" % (p.mls_id, p.mls_property_id) ))
             except: 
@@ -205,7 +194,9 @@ class Step3Convert(object):
         imported_sql =  "SELECT mls_id, MLS_Number, Street_Number, Direction, Street_Name, " \
                         "City, State, Zip_Code, List_Price, Bedrooms, Ttl_Baths, Days_On_Market, " \
                         "Photo_Count, Total_SF_Apx, Style, Public_Remarks, Rooms, Year_Built, Water, Sewer, Property_Type, " \
-                        "Family_Rm_Level, Full_Baths, Partial_Baths, Bedroom1_Dim, Bedroom2_Dim, Bedroom3_Dim, Bedroom4_Dim " \
+                        "Family_Rm_Level, Full_Baths, Partial_Baths, Bedroom1_Dim, Bedroom2_Dim, Bedroom3_Dim, Bedroom4_Dim, " \
+                        "Living_Rm_Dim, Living_Rm_Flooring, Living_Rm_Level, Attic, Basement, Heat, Cooling, Garage, Fireplace, " \
+                        "Exterior_Features, Roof, Foundation, Lot_Size_Apx, Lot_Description, Elementary_School, Middle_School, High_School " \
                         "FROM homesnacksweb_propertyimport WHERE length(City)>0 and length(State)>0 "        
         cursor.execute(imported_sql)
         properties = cursor.fetchall()
@@ -213,34 +204,17 @@ class Step3Convert(object):
         propertySEOs = []  
 
         for property in properties:
-            mls_id =                property[0]
-            mls_property_id =       property[1]
-            street_number =         property[2]
-            direction =             property[3]
-            street_name =           property[4]
-            city =                  property[5]
-            state =                 property[6]
-            zip_code =              property[7]
-            list_price =            property[8]
-            bedrooms =              property[9]
-            bathrooms =             property[10]
-            days_on_market =        property[11]
-            photo_count =           property[12]
-            size =                  property[13]
-            house_style =           property[14]
-            property_description =  property[15] 
-            total_rooms =           property[16]
-            year_built =            property[17]
-            water_source =          property[18]
-            sewer =                 property[19]
-            property_type =         property[20]
-            family_room_level =     property[21]
-            bathrooms_full =        property[22]
-            bathrooms_half =        property[23]
-            bedroom_dim_1 =         property[24]
-            bedroom_dim_2 =         property[25]
-            bedroom_dim_3 =         property[26]
-            bedroom_dim_4 =         property[27]        
+
+            property_vars = ['mls_id', 'mls_property_id', 'street_number', 'direction', 'street_name', 'city', 'state', 'zip_code', 'list_price', 'bedrooms', 'bathrooms', 
+            'days_on_market', 'photo_count', 'size', 'house_style', 'property_description', 'total_rooms', 'year_built', 'water_source', 'sewer', 
+            'property_type', 'family_room_level', 'bathrooms_full', 'bathrooms_half', 'bedroom_dim_1', 'bedroom_dim_2', 'bedroom_dim_3', 'bedroom_dim_4', 'living_room_dimensions', 
+            'living_room_flooring', 'living_room_level', 'attic_info', 'basement_info', 'heating_info', 'cooling_info', 'garage_info', 'fireplace_info', 'exterior_features', 
+            'roof_info', 'foundation_info', 'lot_dimensions', 'lot_description', 'school_elementary', 'school_middle', 'school_high'
+            ]
+            
+            for key in enumerate(property_vars):
+                key_no, var_name = key
+                exec('%s = property[%d]' % (var_name, key_no)) 
             
             full_address = "%s%s %s" % (street_number.title(), (' ' + direction.upper() if (direction is not None and len(direction)>0) else ''), street_name.title()) 
             city_state_zip = "%s, %s %s" % (city.title(), state.upper(), zip_code)
@@ -250,7 +224,20 @@ class Step3Convert(object):
             family_room_level = str(family_room_level.strip())
             bedroom_dimension_list = [bedroom_dim_1.strip().replace(' ', '') , bedroom_dim_2.strip().replace(' ', '') , bedroom_dim_3.strip().replace(' ', '') , bedroom_dim_4.strip().replace(' ', '')]
             bedroom_dimensions = ', '.join(filter(None, bedroom_dimension_list)).lower()
-            
+            living_room_dimensions = living_room_dimensions.strip().replace(' ','').lower()
+            attic_info = re.sub(r',([^ ])', r', \1', attic_info).strip()
+            basement_info = re.sub(r',([^ ])', r', \1', basement_info).strip()
+            heating_info = re.sub(r',([^ ])', r', \1', heating_info).strip()
+            cooling_info = re.sub(r',([^ ])', r', \1', cooling_info).strip()
+            garage_info = re.sub(r',([^ ])', r', \1', garage_info).strip()
+            fireplace_info = re.sub(r',([^ ])', r', \1', fireplace_info).strip()
+            roof_info = re.sub(r',([^ ])', r', \1', roof_info).strip()
+            foundation_info = re.sub(r',([^ ])', r', \1', foundation_info).strip()
+            lot_dimensions = lot_dimensions.strip().replace(' ','').lower()
+            lot_description = re.sub(r',([^ ])', r', \1', lot_description).strip()
+            water_source = re.sub(r',([^ ])', r', \1', water_source).strip()
+            sewer = re.sub(r',([^ ])', r', \1', sewer).strip()
+
             try:
                 list_price_float = float(list_price)
             except ValueError, e:
@@ -301,7 +288,6 @@ class Step3Convert(object):
                                 
             try:
                 bathrooms_full_float = float(bathrooms_full)
-                print(bathrooms_full, bathrooms_full_float)
             except ValueError, e:
                 bathrooms_full_float = 0
                 self.cmd.stdout.write(self.cmd.style.SUCCESS('mls/id bathrooms_full %s/%s %s sharted.' % (mls_id, mls_property_id, bathrooms_full)))   
@@ -312,7 +298,7 @@ class Step3Convert(object):
                 bathrooms_half_float = 0
                 self.cmd.stdout.write(self.cmd.style.SUCCESS('mls/id bathrooms_half %s/%s %s sharted.' % (mls_id, mls_property_id, bathrooms_half)))   
        
-            self.cmd.stdout.write(self.cmd.style.SUCCESS('%s-%s | addr: %s, %s / seo: %s / bathf: %s, bathh:%s ' % (str(mls_id), mls_property_id, full_address, city_state_zip, seo_url, bathrooms_full_float, bathrooms_half_float)))       
+            #self.cmd.stdout.write(self.cmd.style.SUCCESS('Formatting passed: %s-%s | addr: %s, %s / seo: %s / bathf: %s, bathh:%s ' % (str(mls_id), mls_property_id, full_address, city_state_zip, seo_url, bathrooms_full_float, bathrooms_half_float)))       
             
             propertySEOs.append(PropertyCurrent(
                 mls_id=int(mls_id), mls_property_id=mls_property_id, address_line_1=full_address, 
@@ -321,7 +307,12 @@ class Step3Convert(object):
                 status=PropertyCurrent.STATUS_ACTIVE, days_on_market=days_on_market_int, photo_count=photo_count_int, 
                 size=size_int, house_style=house_style, property_description=property_description, rooms_total=total_rooms_float, 
                 year_built=year_built_int, water_source=water_source, sewer=sewer, property_type=property_type, family_room_level=family_room_level,
-                bathrooms_full=bathrooms_full_float, bathrooms_half=bathrooms_half_float, bedroom_dimensions_all=bedroom_dimensions
+                bathrooms_full=bathrooms_full_float, bathrooms_half=bathrooms_half_float, bedroom_dimensions_all=bedroom_dimensions,
+                living_room_dimensions=living_room_dimensions, living_room_flooring=living_room_flooring, living_room_level=living_room_level,
+                attic_info=attic_info, basement_info=basement_info, heating_info=heating_info, cooling_info=cooling_info, garage_info=garage_info,
+                fireplace_info=fireplace_info, exterior_features=exterior_features, roof_info=roof_info, foundation_info=foundation_info, 
+                lot_dimensions=lot_dimensions, lot_description=lot_description, school_elementary=school_elementary, school_middle=school_middle,
+                school_high=school_high
             ))
         
         cursor.close()
@@ -488,8 +479,10 @@ class Step4Generate(object):
                 property.formatted_sqft = '{:,}'.format(int(property.size))
                 property.formatted_rooms_total = '{0:g}'.format(float(property.rooms_total))              
                 property.formatted_full_baths = '{0:g}'.format(float(property.bathrooms_full))
-                property.formatted_half_baths = '{0:g}'.format(float(property.bathrooms_total))
-
+                property.formatted_half_baths = '{0:g}'.format(float(property.bathrooms_half))
+                property.exterior_features = [feature.strip() for feature in property.exterior_features.split(',')]
+                property.exterior_features = [feature for feature in property.exterior_features if feature!='']
+                
                 """ Assemble a crackerjack list of nearby homes using several techniques """
 
                 nearby_properties_in_zipcode = []

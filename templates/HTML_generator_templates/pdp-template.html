@@ -197,26 +197,29 @@
 							<ul>
 								<li>Number of Bedrooms: {{property.formatted_total_beds}}</li>								
 								<li>Bedroom Dimensions (ft): {{property.bedroom_dimensions_all}} </li>
-								<li>Number of Baths (Full): {{property.formatted_half_baths}}</li>
+								<li>Number of Baths (Full): {{property.formatted_full_baths}}</li>
 								<li>Number of Baths (Partial): {{property.formatted_half_baths}}</li>
 							</ul>
 						</div>						
+						{% if property.living_room_dimensions or property.living_room_flooring or property.living_room_level %}
 						<div class="extra-features-box">
 							<div class="extra-features-subhead">
 								Living Room Information
 							</div>
 							<ul>
-								<li>Dimensions: hang on...</li>
-								<li>Flooring: almost done...</li>
-								<li>Living Rm Level: not quite yet...</li>
+								{% if property.living_room_dimensions %}<li>Dimensions: {{property.living_room_dimensions}}</li>{% endif %}
+								{% if property.living_room_flooring %}<li>Flooring: {{property.living_room_flooring}}</li>{% endif %}
+								{% if property.living_room_level %}<li>Living Rm Level: {{property.living_room_level}}</li>{% endif %}
 							</ul>
 						</div>
+						{% endif %}
 						<div class="extra-features-box">
 							<div class="extra-features-subhead">
 								Attic & Basement Information
 							</div>
 							<ul>
-								<li>coming right up...</li>
+								{% if property.attic_info %}<li>Attic: {{property.attic_info}}</li>{% endif %}
+								{% if property.basement_info %}<li>Basement: {{property.basement_info}}</li>{% endif %}
 							</ul>
 						</div>
 						<div class="extra-features-box">
@@ -224,28 +227,17 @@
 								Heating & Cooling Information
 							</div>
 							<ul>
-								<li>Cooling: wait...</li>
-								<li>Heating: stand by...</li>
+								{% if property.heating_info %}<li>Heating: {{property.heating_info}}</li>{% endif %}
+								{% if property.cooling_info %}<li>Cooling: {{property.cooling_info}}</li>{% endif %}
 							</ul>
 						</div>
 						<div class="extra-features-box">
 							<div class="extra-features-subhead">
-								Garage Information
+								Other Interior Information
 							</div>
 							<ul>
-								<li>list</li>
-								<li>of</li>
-								<li>stuffs</li>
-							</ul>
-						</div>
-						<div class="extra-features-box">
-							<div class="extra-features-subhead">
-								Fireplace Information
-							</div>
-							<ul>
-								<li>whatever</li>
-								<li>she said</li>
-								<li>in the RETS field</li>
+								{% if property.garage_info %}<li>Garage: {{property.garage_info}}</li>{% endif %}
+								{% if property.fireplace_info %}<li>Fireplace: {{property.fireplace_info}}</li>{% endif %}
 							</ul>
 						</div>
 					</div>
@@ -254,43 +246,26 @@
 						<div class="extra-features-head">
 							Exterior Features / Neighborhood / Schools
 						</div>
+						{% if property.exterior_features|length > 0 %}
 						<div class="extra-features-box">
 							<div class="extra-features-subhead">
-								Exterior Walls
+								Exterior Features
 							</div>
 							<ul>
-								<li>Brick</li>
-								<li>Vinyl</li>
+								{% for feature in property.exterior_features %}
+								<li>{{feature}}</li>
+								{% endfor %}
 							</ul>
 						</div>
+						{% endif %}
 						<div class="extra-features-box">
 							<div class="extra-features-subhead">
-								Roof Information
+								Roof and Foundation Information
 							</div>
 							<ul>
-								<li>Asphalt/Fiberglass Shingle</li>
-							</ul>
-						</div>
-						<div class="extra-features-box">
-							<div class="extra-features-subhead">
-								Foundation
-							</div>
-							<ul>
-								<li>Block</li>
-								<li>Crawl Space</li>
-							</ul>
-						</div>
-						<div class="extra-features-box">
-							<div class="extra-features-subhead">
-								Property Features
-							</div>
-							<ul>
-								<li>Fenced Yard</li>
-								<li>Level</li>
-								<li>Patio</li>
-								<li>Porch Front</li>
-								<li>Replacement Windows</li>
-								<li>Drive Construction: Other</li>
+								{% if property.year_built > 999 %}<li>Year Built: {{property.year_built}}</li>{% endif %}
+								{% if property.roof_info %}<li>Roof: {{property.roof_info}}</li>{% endif %}
+								{% if property.foundation_info %}<li>Foundation: {{property.foundation_info}}</li>{% endif %}
 							</ul>
 						</div>
 						<div class="extra-features-box">
@@ -298,8 +273,8 @@
 								Lot Information
 							</div>
 							<ul>
-								<li>50 x 141</li>
-								<li>Level</li>
+								{% if property.lot_dimensions %}<li>Lot Size: {{property.lot_dimensions}}</li>{% endif %}
+								{% if property.lot_description %}<li>Description: {{property.lot_description}}</li>{% endif %}
 							</ul>
 						</div>
 						<div class="extra-features-box">
@@ -307,8 +282,8 @@
 								Water, Sewage, & Utilities
 							</div>
 							<ul>
-								<li>Water: City</li>
-								<li>Sewer: Septic</li>
+								{% if property.water_source %}<li>Water: {{property.water_source}}</li>{% endif %}
+								{% if property.sewer %}<li>Sewer: {{property.sewer}}</li>{% endif %}
 							</ul>
 						</div>
 						<div class="extra-features-box">
@@ -316,9 +291,9 @@
 								School Information
 							</div>
 							<ul>
-								<li>Elementary School: Edison </li>
-								<li>Middle School: North Ridge</li>
-								<li>High School: Danville</li>
+								{% if property.school_elementary %}<li>Elementary School: {{property.school_elementary}} </li>{% endif %}
+								{% if property.school_middle %}<li>Middle School: {{property.school_middle}}</li>{% endif %}
+								{% if property.school_high %}<li>High School: {{property.school_high}}</li>{% endif %}
 							</ul>
 						</div>
 					</div>
