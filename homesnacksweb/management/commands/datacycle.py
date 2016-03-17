@@ -174,7 +174,7 @@ class Step3Convert(object):
                     'bathrooms_half','bedroom_dimensions_all','living_room_dimensions','living_room_flooring',
                     'living_room_level','attic_info','basement_info', 'heating_info', 'cooling_info', 'garage_info', 
                     'fireplace_info', 'exterior_features', 'roof_info', 'foundation_info', 'lot_dimensions', 'lot_description',
-                    'school_elementary', 'school_middle', 'school_high'
+                    'school_elementary', 'school_middle', 'school_high', 'agent_name', 'agent_phone', 'agent_phone_2'
                 ]:
                     exec('p.' + field + '=property.' + field)
 
@@ -196,7 +196,8 @@ class Step3Convert(object):
                         "Photo_Count, Total_SF_Apx, Style, Public_Remarks, Rooms, Year_Built, Water, Sewer, Property_Type, " \
                         "Family_Rm_Level, Full_Baths, Partial_Baths, Bedroom1_Dim, Bedroom2_Dim, Bedroom3_Dim, Bedroom4_Dim, " \
                         "Living_Rm_Dim, Living_Rm_Flooring, Living_Rm_Level, Attic, Basement, Heat, Cooling, Garage, Fireplace, " \
-                        "Exterior_Features, Roof, Foundation, Lot_Size_Apx, Lot_Description, Elementary_School, Middle_School, High_School " \
+                        "Exterior_Features, Roof, Foundation, Lot_Size_Apx, Lot_Description, Elementary_School, Middle_School, High_School, "\
+                        "LA_First_Name, LA_Last_Name, LA_Phone1, LA_Phone2 " \
                         "FROM homesnacksweb_propertyimport WHERE length(City)>0 and length(State)>0 "        
         cursor.execute(imported_sql)
         properties = cursor.fetchall()
@@ -209,7 +210,8 @@ class Step3Convert(object):
             'days_on_market', 'photo_count', 'size', 'house_style', 'property_description', 'total_rooms', 'year_built', 'water_source', 'sewer', 
             'property_type', 'family_room_level', 'bathrooms_full', 'bathrooms_half', 'bedroom_dim_1', 'bedroom_dim_2', 'bedroom_dim_3', 'bedroom_dim_4', 'living_room_dimensions', 
             'living_room_flooring', 'living_room_level', 'attic_info', 'basement_info', 'heating_info', 'cooling_info', 'garage_info', 'fireplace_info', 'exterior_features', 
-            'roof_info', 'foundation_info', 'lot_dimensions', 'lot_description', 'school_elementary', 'school_middle', 'school_high'
+            'roof_info', 'foundation_info', 'lot_dimensions', 'lot_description', 'school_elementary', 'school_middle', 'school_high', 'la_first_name', 'la_last_name',
+            'la_phone1', 'la_phone2'
             ]
             
             for key in enumerate(property_vars):
@@ -237,7 +239,8 @@ class Step3Convert(object):
             lot_description = re.sub(r',([^ ])', r', \1', lot_description).strip()
             water_source = re.sub(r',([^ ])', r', \1', water_source).strip()
             sewer = re.sub(r',([^ ])', r', \1', sewer).strip()
-
+            agent_name = ' '.join([la_first_name.strip(), la_last_name.strip()])
+            
             try:
                 list_price_float = float(list_price)
             except ValueError, e:
@@ -297,7 +300,19 @@ class Step3Convert(object):
             except ValueError, e:
                 bathrooms_half_float = 0
                 self.cmd.stdout.write(self.cmd.style.SUCCESS('mls/id bathrooms_half %s/%s %s sharted.' % (mls_id, mls_property_id, bathrooms_half)))   
-       
+            
+            try:
+                agent_phone = format(int(la_phone1[:-1]), ",").replace(",", "-") + la_phone1[-1] if la_phone1 else None
+            except ValueError, e:
+                agent_phone = None
+                self.cmd.stdout.write(self.cmd.style.SUCCESS('mls/id listing agent phone %s/%s %s sharted.' % (mls_id, mls_property_id, agent_phone))) 
+                   
+            try:
+                agent_phone_2 = format(int(la_phone2[:-1]), ",").replace(",", "-") + la_phone2[-1] if la_phone2 else None
+            except ValueError, e:
+                agent_phone_2 = None
+                self.cmd.stdout.write(self.cmd.style.SUCCESS('mls/id listing agent phone 2 %s/%s %s sharted.' % (mls_id, mls_property_id, agent_phone_2))) 
+                                     
             #self.cmd.stdout.write(self.cmd.style.SUCCESS('Formatting passed: %s-%s | addr: %s, %s / seo: %s / bathf: %s, bathh:%s ' % (str(mls_id), mls_property_id, full_address, city_state_zip, seo_url, bathrooms_full_float, bathrooms_half_float)))       
             
             propertySEOs.append(PropertyCurrent(
@@ -312,7 +327,7 @@ class Step3Convert(object):
                 attic_info=attic_info, basement_info=basement_info, heating_info=heating_info, cooling_info=cooling_info, garage_info=garage_info,
                 fireplace_info=fireplace_info, exterior_features=exterior_features, roof_info=roof_info, foundation_info=foundation_info, 
                 lot_dimensions=lot_dimensions, lot_description=lot_description, school_elementary=school_elementary, school_middle=school_middle,
-                school_high=school_high
+                school_high=school_high, agent_name=agent_name, agent_phone=agent_phone, agent_phone_2=agent_phone_2 
             ))
         
         cursor.close()
@@ -482,6 +497,8 @@ class Step4Generate(object):
                 property.formatted_half_baths = '{0:g}'.format(float(property.bathrooms_half))
                 property.exterior_features = [feature.strip() for feature in property.exterior_features.split(',')]
                 property.exterior_features = [feature for feature in property.exterior_features if feature!='']
+
+                
                 
                 """ Assemble a crackerjack list of nearby homes using several techniques """
 

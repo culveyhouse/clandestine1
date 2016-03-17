@@ -100,7 +100,7 @@ class PropertyCurrent(models.Model):
     seo_url = models.CharField(max_length=512, null=True, blank=True)
     days_on_market = models.PositiveIntegerField(null=True, blank=True)
     agent_name = models.CharField(max_length=255, null=True, blank=True)
-    agent_id = models.PositiveIntegerField(null=True, blank=True)
+    agent_id = models.CharField(max_length=255, null=True, blank=True)
     agent_phone = models.CharField(max_length=255, null=True, blank=True)
     agent_phone_2 = models.CharField(max_length=255, null=True, blank=True)
     agent_email = models.CharField(max_length=255, null=True, blank=True)
