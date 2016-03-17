@@ -106,6 +106,8 @@ class PropertyCurrent(models.Model):
     agent_email = models.CharField(max_length=255, null=True, blank=True)
     agent_url = models.URLField(null=True, blank=True)
     agent_listing_office_name = models.CharField(max_length=255, null=True, blank=True)
+    agent_listing_office_address_1 = models.CharField(max_length=512, null=True, blank=True)
+    agent_listing_office_address_citystzip = models.CharField(max_length=512, null=True, blank=True)    
     agent_listing_office_id = models.PositiveIntegerField(null=True, blank=True)
     agent_listing_office_phone = models.CharField(max_length=255, null=True, blank=True)
     agent_listing_office_phone_2 = models.CharField(max_length=255, null=True, blank=True)

@@ -297,8 +297,35 @@
 							</ul>
 						</div>
 					</div>
+					
+					<div class="extra-features">
+						<div class="extra-features-head">
+							Real Estate Agent Information 
+						</div>
+						
+						<div class="extra-features-box">
+							<div class="extra-features-subhead">
+								Listing Agent
+							</div>
+							<div class="listing_agent">
+								<span class="listing_agent_row">{{property.agent_name}}</span>
+								<span class="listing_agent_row">{{property.agent_phone}}</span>								
+								{% if property.agent_phone_2 %}<span class="listing_agent_row">{{property.agent_phone_2}}</span>{% endif %}
+							</div>
+						</div>
+						<div class="extra-features-box">
+							<div class="extra-features-subhead">
+								Listing Office
+							</div>
+							<div class="listing_agent">
+								<span class="listing_agent_row">{{property.agent_listing_office_name}}</span>
+								{% if property.agent_listing_office_address_1 %}<span class="listing_agent_row">{{property.agent_listing_office_address_1}}</span>{% endif %}
+								{% if property.agent_listing_office_address_citystzip %}<span class="listing_agent_row">{{property.agent_listing_office_address_citystzip}}</span>{% endif %}								
+								{% if property.agent_listing_office_phone %}<span class="listing_agent_row">{{property.agent_listing_office_phone}}</span>{% endif %}							
+							</div>
+						</div>						
+					</div>
 				</div>
-
 
 			<div class="section-header clearfix pdp-similar-homes">
 				<h2>Similar Homes Near {{property.address_line_1}}:</h2>

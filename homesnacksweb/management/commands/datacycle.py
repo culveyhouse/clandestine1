@@ -174,7 +174,8 @@ class Step3Convert(object):
                     'bathrooms_half','bedroom_dimensions_all','living_room_dimensions','living_room_flooring',
                     'living_room_level','attic_info','basement_info', 'heating_info', 'cooling_info', 'garage_info', 
                     'fireplace_info', 'exterior_features', 'roof_info', 'foundation_info', 'lot_dimensions', 'lot_description',
-                    'school_elementary', 'school_middle', 'school_high', 'agent_name', 'agent_phone', 'agent_phone_2'
+                    'school_elementary', 'school_middle', 'school_high', 'agent_name', 'agent_phone', 'agent_phone_2', 'agent_id',
+                    'agent_listing_office_name', 'agent_listing_office_address_1', 'agent_listing_office_address_citystzip' 
                 ]:
                     exec('p.' + field + '=property.' + field)
 
@@ -197,7 +198,8 @@ class Step3Convert(object):
                         "Family_Rm_Level, Full_Baths, Partial_Baths, Bedroom1_Dim, Bedroom2_Dim, Bedroom3_Dim, Bedroom4_Dim, " \
                         "Living_Rm_Dim, Living_Rm_Flooring, Living_Rm_Level, Attic, Basement, Heat, Cooling, Garage, Fireplace, " \
                         "Exterior_Features, Roof, Foundation, Lot_Size_Apx, Lot_Description, Elementary_School, Middle_School, High_School, "\
-                        "LA_First_Name, LA_Last_Name, LA_Phone1, LA_Phone2 " \
+                        "LA_First_Name, LA_Last_Name, LA_Phone1, LA_Phone2, LA_ID, LO_Name, LO_MAIL_CITY, LO_MAIL_STATE,  " \
+                        "LO_MAIL_ZIP, LO_MAIL1 " \
                         "FROM homesnacksweb_propertyimport WHERE length(City)>0 and length(State)>0 "        
         cursor.execute(imported_sql)
         properties = cursor.fetchall()
@@ -211,7 +213,7 @@ class Step3Convert(object):
             'property_type', 'family_room_level', 'bathrooms_full', 'bathrooms_half', 'bedroom_dim_1', 'bedroom_dim_2', 'bedroom_dim_3', 'bedroom_dim_4', 'living_room_dimensions', 
             'living_room_flooring', 'living_room_level', 'attic_info', 'basement_info', 'heating_info', 'cooling_info', 'garage_info', 'fireplace_info', 'exterior_features', 
             'roof_info', 'foundation_info', 'lot_dimensions', 'lot_description', 'school_elementary', 'school_middle', 'school_high', 'la_first_name', 'la_last_name',
-            'la_phone1', 'la_phone2'
+            'la_phone1', 'la_phone2', 'la_id', 'lo_name', 'lo_mail_city', 'lo_mail_state', 'lo_mail_zip', 'lo_mail_1' 
             ]
             
             for key in enumerate(property_vars):
@@ -240,6 +242,9 @@ class Step3Convert(object):
             water_source = re.sub(r',([^ ])', r', \1', water_source).strip()
             sewer = re.sub(r',([^ ])', r', \1', sewer).strip()
             agent_name = ' '.join([la_first_name.strip(), la_last_name.strip()])
+            agent_id = str(la_id).strip()
+            agent_listing_office_address_1 = str(lo_mail_1).strip()
+            agent_listing_office_address_citystzip = "%s, %s %s" % (lo_mail_city.title().strip(), lo_mail_state.upper().strip(), lo_mail_zip.strip()) 
             
             try:
                 list_price_float = float(list_price)
@@ -327,7 +332,9 @@ class Step3Convert(object):
                 attic_info=attic_info, basement_info=basement_info, heating_info=heating_info, cooling_info=cooling_info, garage_info=garage_info,
                 fireplace_info=fireplace_info, exterior_features=exterior_features, roof_info=roof_info, foundation_info=foundation_info, 
                 lot_dimensions=lot_dimensions, lot_description=lot_description, school_elementary=school_elementary, school_middle=school_middle,
-                school_high=school_high, agent_name=agent_name, agent_phone=agent_phone, agent_phone_2=agent_phone_2 
+                school_high=school_high, agent_name=agent_name, agent_phone=agent_phone, agent_phone_2=agent_phone_2, agent_id=agent_id, 
+                agent_listing_office_name=lo_name, agent_listing_office_address_1=agent_listing_office_address_1, 
+                agent_listing_office_address_citystzip=agent_listing_office_address_citystzip
             ))
         
         cursor.close()
