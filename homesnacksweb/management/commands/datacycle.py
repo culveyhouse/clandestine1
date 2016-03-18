@@ -245,7 +245,7 @@ class Step3Convert(object):
             agent_id = str(la_id).strip()
             agent_listing_office_address_1 = str(lo_mail_1).strip()
             agent_listing_office_address_citystzip = "%s, %s %s" % (lo_mail_city.title().strip(), lo_mail_state.upper().strip(), lo_mail_zip.strip()) 
-            
+        
             try:
                 list_price_float = float(list_price)
             except ValueError, e:
