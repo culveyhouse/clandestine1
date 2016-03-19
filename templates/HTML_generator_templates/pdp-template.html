@@ -469,7 +469,10 @@
 
 	<script>
 	$(document).ready(function(){
-	    $('.btn').popover({title: "", content: '<iframe align="middle" width="700" height="500" src="https://docs.google.com/forms/d/1kE28j85xXvuAewmGILcZTo5-kEQG7afZeV3-LkjGv7w/viewform"></iframe>', html: true, placement: "right"});
+	    $('.btn').popover({title: '<span class="pdp-popover-close"><a href="#" class="close" data-dismiss="alert">&times;</a> Close form</span>', content: '<iframe align="middle" width="700" height="550" class="popover-iframe" src="https://docs.google.com/forms/d/1kE28j85xXvuAewmGILcZTo5-kEQG7afZeV3-LkjGv7w/viewform?entry.1376670971=http://www.homesnacks.net/real-estate/{{property.seo_url}}/"></iframe>', html: true, placement: "right"});
+		$(document).on("click", ".popover .close" , function(){
+		        $(this).parents(".popover").popover('hide');
+		});		
 	});
 	</script>
 </body>

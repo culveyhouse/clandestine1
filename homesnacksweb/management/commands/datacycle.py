@@ -6,7 +6,7 @@ from homesnacksweb.models import MLS, PropertyCurrent, City, DataCycle, DataCycl
 from datetime import datetime
 from itertools import chain
 from decimal import Decimal  
-import re, sys, math
+import re, sys, math, time
 
 class Command(BaseCommand):
     help = 'This command manages the entire HomeSnacks real estate data cycle'
@@ -310,13 +310,13 @@ class Step3Convert(object):
                 agent_phone = format(int(la_phone1[:-1]), ",").replace(",", "-") + la_phone1[-1] if la_phone1 else None
             except ValueError, e:
                 agent_phone = None
-                self.cmd.stdout.write(self.cmd.style.SUCCESS('mls/id listing agent phone %s/%s %s sharted.' % (mls_id, mls_property_id, agent_phone))) 
+                self.cmd.stdout.write(self.cmd.style.SUCCESS('mls/id listing agent phone %s/%s %s sharted.' % (mls_id, mls_property_id, la_phone1))) 
                    
             try:
                 agent_phone_2 = format(int(la_phone2[:-1]), ",").replace(",", "-") + la_phone2[-1] if la_phone2 else None
             except ValueError, e:
                 agent_phone_2 = None
-                self.cmd.stdout.write(self.cmd.style.SUCCESS('mls/id listing agent phone 2 %s/%s %s sharted.' % (mls_id, mls_property_id, agent_phone_2))) 
+                self.cmd.stdout.write(self.cmd.style.SUCCESS('mls/id listing agent phone 2 %s/%s %s sharted.' % (mls_id, mls_property_id, la_phone2))) 
                                      
             #self.cmd.stdout.write(self.cmd.style.SUCCESS('Formatting passed: %s-%s | addr: %s, %s / seo: %s / bathf: %s, bathh:%s ' % (str(mls_id), mls_property_id, full_address, city_state_zip, seo_url, bathrooms_full_float, bathrooms_half_float)))       
             
@@ -404,7 +404,7 @@ class Step4Generate(object):
         
         property_slide_total = range(1, 15)
 
-        carousel_properties = PropertyCurrent.objects.filter(price__gt = 100000).filter(photo_count__gt = 0).order_by('days_on_market')[:15]
+        carousel_properties = PropertyCurrent.objects.filter(price__gt = 100000, photo_count__gt = 0).exclude(status=PropertyCurrent.STATUS_HIDDEN).order_by('days_on_market')[:15]
         for property in carousel_properties:
             property.formatted_display_list_price = '{:,.0f}'.format(property.price)  
             property.property_primary_photo_url = '%d/Photo%s-1.jpeg' % (property.mls_id, property.mls_property_id)
@@ -420,6 +420,7 @@ class Step4Generate(object):
             final_html.close()
 
     def generateCityPages(self):   
+        
         self.cmd.stdout.write(self.cmd.style.SUCCESS('Beginning the city HTML page generation'))
         cities = City.objects.all().filter(active=1)
         for city in cities: 
@@ -442,9 +443,8 @@ class Step4Generate(object):
                 seo_url = re.sub(r' ', r'-', seo_url)
                 seo_url = re.sub(r'-+', r'-', seo_url)            
                 
-    
-                city_properties = PropertyCurrent.objects.filter(city=city.name, state=city.state).order_by('days_on_market')[(current_page-1)*15:(current_page*15)]
-                
+                city_properties = PropertyCurrent.objects.filter(city=city.name, state=city.state).exclude(status=PropertyCurrent.STATUS_HIDDEN).order_by('days_on_market')[(current_page-1)*15:(current_page*15)]
+
                 for property in city_properties:
                     property.formatted_display_list_price = '{:,.0f}'.format(property.price)  
                     property.property_primary_photo_url = '%d/Photo%s-1.jpeg' % (property.mls_id, property.mls_property_id)
